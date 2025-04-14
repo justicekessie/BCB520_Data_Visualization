@@ -6,11 +6,10 @@ categories: [news, code, analysis]
 image: "image.jpeg"
 format:
   html:
-    code-fold: true       # Enables collapsible code blocks
-    code-tools: true      # Adds copy, toggle, and download buttons
+    code-fold: true       
+    code-tools: true      
     code-summary: "Show the code"  # Optional: label for collapsed code
 ---
-
 
 ```{r, include=FALSE}
 # Load required libraries
@@ -24,239 +23,92 @@ library(ape)
 library(phangorn)
 library(RColorBrewer)
 library(leaflet.extras)
+library(rJava)
+library(dplyr)
 
 # Load the data
-df <- read.csv('lassa_virus_simulation_data.csv')
+lassa_data <- read.csv('lassa_virus_simulation_data.csv')
 
 # Convert date column to Date
-df$date <- as.Date(df$date)
-
-```
-
-```{r}
-# Install required packages if not already installed
-if (!require("leaflet")) install.packages("leaflet")
-if (!require("dplyr")) install.packages("dplyr")
-if (!require("RColorBrewer")) install.packages("RColorBrewer")
-if (!require("htmlwidgets")) install.packages("htmlwidgets")
-
-# Load libraries
-library(leaflet)
-library(dplyr)
-library(RColorBrewer)
-library(htmlwidgets)
-
-# Read the data
-lassa_data <- read.csv("lassa_virus_simulation_data.csv")
-
-# Prepare data for map
-map_data <- lassa_data %>%
-  group_by(country, city, lat, long) %>%
-  summarize(
-    total_cases = n(),
-    human_cases = sum(host == "human"),
-    rodent_cases = sum(host == "rodent"),
-    avg_fitness = mean(fitness),
-    .groups = 'drop'
-  )
-
-# Create a color palette for the number of cases
-pal <- colorBin(
-  palette = "YlOrRd", 
-  domain = map_data$total_cases,
-  bins = 7
-)
-
-# Create the map
-lassa_map <- leaflet(map_data) %>%
-  addTiles() %>%  # Add default OpenStreetMap tiles
-  setView(lng = 0, lat = 8, zoom = 5) %>%  # Center on West Africa
-  
-  # Add circle markers for each city
-  addCircleMarkers(
-    ~long, ~lat,
-    radius = ~sqrt(total_cases)/3,  # Size based on sqrt of cases
-    color = "black",
-    weight = 1,
-    fillColor = ~pal(total_cases),
-    fillOpacity = 0.7,
-    popup = ~paste(
-      "<strong>", city, ", ", country, "</strong><br>",
-      "Total cases: ", total_cases, "<br>",
-      "Human cases: ", human_cases, "<br>",
-      "Rodent cases: ", rodent_cases, "<br>",
-      "Avg. fitness: ", round(avg_fitness, 2)
-    )
-  ) %>%
-  
-  # Add a legend
-  addLegend(
-    position = "bottomright",
-    pal = pal,
-    values = ~total_cases,
-    title = "Total Cases",
-    opacity = 0.7
-  )
-
-# Save the map
-saveWidget(lassa_map, "lassa_geographic_map.html", selfcontained = TRUE)
-
-# Display the map
-lassa_map
-```
-
-```{r}
-# Install required packages
-if (!require("networkD3")) install.packages("networkD3")
-if (!require("igraph")) install.packages("igraph")
-
-# Load libraries
-library(networkD3)
-library(igraph)
-library(dplyr)
-
-# Prepare data for the network visualization
-# We'll create a sample of transmissions for clarity
-set.seed(123) # For reproducibility
-
-# Get unique strains and clades
-strains <- unique(lassa_data$strain)
-transmission_sample <- lassa_data %>%
-  filter(transmission %in% c("rodent-human", "human-human")) %>%
-  sample_n(min(500, nrow(.)))  # Take a sample to avoid overcrowding
-
-# Create edges (from-to connections)
-# For human-human transmissions, we'll simulate connections based on generation sequence
-edges <- data.frame(source = character(), target = character(), value = numeric(), type = character())
-
-for (strain in strains) {
-  strain_data <- transmission_sample %>% filter(strain == !!strain)
-  
-  if (nrow(strain_data) > 1) {
-    # Sort by generation
-    strain_data <- strain_data %>% arrange(generation)
-    
-    # Create connections between consecutive generations
-    for (i in 1:(nrow(strain_data)-1)) {
-      # Only connect if they could be related (later generation)
-      if (strain_data$generation[i+1] > strain_data$generation[i]) {
-        edges <- rbind(edges, data.frame(
-          source = strain_data$clade[i],
-          target = strain_data$clade[i+1],
-          value = 1,
-          type = strain_data$transmission[i+1]
-        ))
-      }
-    }
-  }
-}
-
-# Create nodes dataframe
-nodes <- transmission_sample %>%
-  select(clade, strain, host, fitness) %>%
-  distinct() %>%
-  mutate(group = as.integer(factor(strain)))
-
-# Match node indices for the network
-edges$source_id <- match(edges$source, nodes$clade) - 1
-edges$target_id <- match(edges$target, nodes$clade) - 1
-
-# Filter out any NA relationships
-edges <- edges %>% filter(!is.na(source_id) & !is.na(target_id))
-
-# Create the force network
-force_network <- forceNetwork(
-  Links = edges, 
-  Nodes = nodes,
-  Source = "source_id",
-  Target = "target_id",
-  NodeID = "clade",
-  Group = "group",
-  Value = "value",
-  Nodesize = "fitness",
-  opacity = 0.8,
-  linkColour = ifelse(edges$type == "human-human", "#E69F00", "#56B4E9"),
-  zoom = TRUE,
-  legend = TRUE,
-  bounded = TRUE,
-  fontSize = 12,
-  charge = -50
-)
-
-# Save the network visualization
-saveWidget(force_network, "lassa_transmission_network.html", selfcontained = TRUE)
-
-# Display the network
-force_network
-```
-
-```{r}
-# Install required packages
-if (!require("plotly")) install.packages("plotly")
-
-# Load libraries
-library(plotly)
-library(dplyr)
-library(lubridate)
-
-# Convert date strings to Date objects
 lassa_data$date <- as.Date(lassa_data$date)
 
-# Create a sample for better visualization
-set.seed(42)
-spatial_sample <- lassa_data %>%
-  arrange(date) %>%
-  sample_n(min(3000, nrow(.)))
-
-# Create hover text
-spatial_sample$hover_text <- paste(
-  "Date:", spatial_sample$date, "<br>",
-  "Location:", spatial_sample$city, ",", spatial_sample$country, "<br>",
-  "Host:", spatial_sample$host, "<br>",
-  "Strain:", spatial_sample$strain, "<br>",
-  "Transmission:", spatial_sample$transmission
-)
-
-# Create the spatial plot
-spatial_plot <- plot_ly(
-  data = spatial_sample,
-  x = ~long, 
-  y = ~lat,
-  z = ~as.numeric(date - min(date)) / 7,  # Convert to weeks since first case
-  type = "scatter3d",
-  mode = "markers",
-  marker = list(
-    size = 5,
-    color = ~as.numeric(date),  # Color by date
-    colorscale = "Viridis",
-    opacity = 0.7
-  ),
-  text = ~hover_text,
-  hoverinfo = "text",
-  color = ~as.factor(host)
-) %>%
-  layout(
-    title = "Spatial-Temporal Spread of Lassa Virus",
-    scene = list(
-      xaxis = list(title = "Longitude"),
-      yaxis = list(title = "Latitude"),
-      zaxis = list(title = "Weeks Since First Case")
-    ),
-    legend = list(title = list(text = "Host"))
-  ) %>%
-  colorbar(title = "Date")
-
-# Save the plot
-htmlwidgets::saveWidget(
-  as_widget(spatial_plot),
-  "lassa_spatial_temporal_spread.html",
-  selfcontained = TRUE
-)
-
-# Display the plot
-spatial_plot
 ```
 
+### Description of Data
+
+Lassa virus (LASV) is endemic to West Africa, where it is responsible for causing a potentially severe hemorrhagic fever in humans. The primary reservoir of LASV is the rodent *Mastomys natalensis*, with transmission to humans occurring through contact with the animal’s contaminated urine, feces, blood, or tissue. According to estimates from the World Health Organization (WHO), LASV is responsible for approximately 300,000 cases of illness and 5,000 deaths annually across West Africa. In Nigeria, a significant outbreak in 2022 resulted in 1,067 confirmed cases and 189 fatalities, yielding a case fatality rate (CFR) of 17.7%. By March 2023, there were 784 confirmed cases and 142 deaths in the country. Furthermore, the virus has spread westward, notably into Ghana, where a recent outbreak led to 14 confirmed cases, 97 traced contacts, and one death. Lassa fever continues to be a major public health concern, particularly in impoverished communities in West Africa. Its persistent spread westward underscores the critical need for intensified research efforts and the implementation of effective control measures.
+
+1.  <div>
+
+    ```{r}
+    # Prepare data for map
+    map_data <- lassa_data %>%
+      group_by(country, city, lat, long) %>%
+      summarize(
+        total_cases = n(),
+        human_cases = sum(host == "human"),
+        rodent_cases = sum(host == "rodent"),
+        avg_fitness = mean(fitness),
+        .groups = 'drop'
+      )
+
+    # Create a color palette for the number of cases
+    pal <- colorBin(
+      palette = "YlOrRd", 
+      domain = map_data$total_cases,
+      bins = 7
+    )
+
+    # Create the map
+    lassa_map <- leaflet(map_data) %>%
+      addTiles() %>%  # Add default OpenStreetMap tiles
+      setView(lng = 0, lat = 8, zoom = 5) %>%  # Center on West Africa
+      
+      # Add circle markers for each city
+      addCircleMarkers(
+        ~long, ~lat,
+        radius = ~sqrt(total_cases)/3,  # Size based on sqrt of cases
+        color = "black",
+        weight = 1,
+        fillColor = ~pal(total_cases),
+        fillOpacity = 0.7,
+        popup = ~paste(
+          "<strong>", city, ", ", country, "</strong><br>",
+          "Total cases: ", total_cases, "<br>",
+          "Human cases: ", human_cases, "<br>",
+          "Rodent cases: ", rodent_cases, "<br>",
+          "Avg. fitness: ", round(avg_fitness, 2)
+        )
+      ) %>%
+      
+      # Add a legend
+      addLegend(
+        position = "bottomright",
+        pal = pal,
+        values = ~total_cases,
+        title = "Total Cases",
+        opacity = 0.7
+      )
+
+    # Save the map
+    saveWidget(lassa_map, "lassa_geographic_map.html", selfcontained = TRUE)
+
+    # Display the map
+    lassa_map
+    ```
+
+    </div>
+
+Given the absence of a human vaccine for LASV, current interventions focus on reducing contact between humans and infected animals, either through behavioral changes or through the mass culling of the rodent reservoir. An alternative and promising approach involves the use of transmissible vaccines to rapidly establish immunity within wild animal reservoir populations, thereby reducing the prevalence of the virus. The key advantage of transmissible vaccines lies in their potential to limit the occurrence of spillover events from rodent reservoirs to human populations while conserving ecological biodiversity. The proposed research seeks to address the urgent need for effective control strategies against LASV in West Africa by evaluating the potential impact of a transmissible vaccine. A prototype transmissible vaccine for LASV has been developed, and the next crucial step involves predicting its efficacy in reducing viral spillover into human populations, particularly in regions such as Western Nigeria and Ghana, where the virus is expanding its range. This objective will be accomplished through the pursuit of the following aims:
+
+1.  Developing and parameterize a within-host models for vaccine replication, immune response, and evolutionary dynamics.
+
+![Recombinant Vector Vaccines](murine_model.png){fig-align="right"}
+
+Our collaborators in the University of Western Australia run the murine model of Lassa virus infection. The data from this model is used for this study. The following is the mathematical model used for this study
+
+```         
+```
 
 ```{r}
 # Install required packages
@@ -376,452 +228,3 @@ htmlwidgets::saveWidget(
 # Display the combined plot
 combined_evolution_plot
 ```
-
-```{r}
-# Install required packages
-if (!require("plotly")) install.packages("plotly")
-if (!require("lubridate")) install.packages("lubridate")
-
-# Load libraries
-library(plotly)
-library(dplyr)
-library(lubridate)
-
-# Prepare data for calendar heatmap
-lassa_data$date <- as.Date(lassa_data$date)
-
-# Aggregate by day and host type
-calendar_data <- lassa_data %>%
-  group_by(date, host) %>%
-  summarize(
-    cases = n(),
-    .groups = 'drop'
-  ) %>%
-  tidyr::complete(
-    date = seq.Date(min(lassa_data$date), max(lassa_data$date), by = "day"),
-    host = c("human", "rodent"),
-    fill = list(cases = 0)
-  ) %>%
-  mutate(
-    year = year(date),
-    month = month(date),
-    day = day(date),
-    weekday = wday(date),
-    week = week(date)
-  )
-
-# Create a heatmap for human cases
-human_heatmap <- calendar_data %>%
-  filter(host == "human") %>%
-  plot_ly(
-    x = ~weekday,
-    y = ~week,
-    z = ~cases,
-    type = "heatmap",
-    colorscale = "YlOrRd",
-    hoverinfo = "text",
-    text = ~paste(
-      "Date:", date, "<br>",
-      "Human Cases:", cases
-    )
-  ) %>%
-  layout(
-    title = "Human Lassa Virus Cases by Day",
-    xaxis = list(
-      title = "",
-      tickvals = 1:7,
-      ticktext = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
-    ),
-    yaxis = list(
-      title = "Week Number",
-      autorange = "reversed"  # To have week 1 at the top
-    )
-  )
-
-# Create a heatmap for rodent cases
-rodent_heatmap <- calendar_data %>%
-  filter(host == "rodent") %>%
-  plot_ly(
-    x = ~weekday,
-    y = ~week,
-    z = ~cases,
-    type = "heatmap",
-    colorscale = "Blues",
-    hoverinfo = "text",
-    text = ~paste(
-      "Date:", date, "<br>",
-      "Rodent Cases:", cases
-    )
-  ) %>%
-  layout(
-    title = "Rodent Lassa Virus Cases by Day",
-    xaxis = list(
-      title = "",
-      tickvals = 1:7,
-      ticktext = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
-    ),
-    yaxis = list(
-      title = "Week Number",
-      autorange = "reversed"  # To have week 1 at the top
-    )
-  )
-
-# Combine into a subplot
-calendar_plot <- subplot(
-  human_heatmap, rodent_heatmap,
-  nrows = 2,
-  heights = c(0.5, 0.5),
-  shareX = TRUE
-) %>%
-  layout(
-    title = "Calendar Heatmap of Lassa Virus Cases"
-  )
-
-# Save the calendar heatmap
-htmlwidgets::saveWidget(
-  as_widget(calendar_plot),
-  "lassa_calendar_heatmap.html",
-  selfcontained = TRUE
-)
-
-# Display the heatmap
-calendar_plot
-```
-
-```{r}
-# Install required packages
-if (!require("leaflet")) install.packages("leaflet")
-if (!require("dplyr")) install.packages("dplyr")
-if (!require("htmlwidgets")) install.packages("htmlwidgets")
-if (!require("igraph")) install.packages("igraph")
-
-# Load libraries
-library(leaflet)
-library(dplyr)
-library(htmlwidgets)
-library(igraph)
-
-# Read the data
-lassa_data <- read.csv("lassa_virus_simulation_data.csv")
-
-# Filter for human-human transmissions only
-human_transmissions <- lassa_data %>%
-  filter(host == "human", transmission == "human-human") %>%
-  mutate(date = as.Date(date))
-
-# Sort by date to establish chronological order
-human_transmissions <- human_transmissions %>%
-  arrange(date)
-
-# Create chains of transmission based on strain, generation, and proximity in time and space
-create_transmission_chains <- function(data, max_chains = 12, min_cases_per_chain = 5) {
-  set.seed(42)  # For reproducibility
-  
-  # Select strains with enough human-human cases
-  strain_counts <- data %>%
-    group_by(strain) %>%
-    summarize(count = n(), .groups = 'drop') %>%
-    filter(count >= min_cases_per_chain) %>%
-    arrange(desc(count))
-  
-  selected_strains <- head(strain_counts$strain, min(max_chains, nrow(strain_counts)))
-  
-  # Create chains for each selected strain
-  all_chains <- list()
-  chain_id <- 1
-  
-  for (strain in selected_strains) {
-    strain_data <- data %>% filter(strain == !!strain)
-    
-    # Find potential patient zeros (earliest cases for this strain)
-    patient_zeros <- strain_data %>%
-      arrange(date, generation) %>%
-      head(3)  # Take a few potential starting points
-    
-    for (i in 1:nrow(patient_zeros)) {
-      # Start a new chain with this patient zero
-      current_chain <- patient_zeros[i,]
-      
-      # Try to build a chain by finding cases that could be connected
-      # (later in time, reasonable geographic proximity, increasing generation)
-      chain_size <- 1
-      last_case <- current_chain[chain_size,]
-      
-      potential_next_cases <- strain_data %>%
-        filter(
-          date > last_case$date,
-          date <= last_case$date + 14,  # Within 14 days (incubation + transmission window)
-          generation > last_case$generation
-        ) %>%
-        mutate(
-          # Calculate geographic distance (simple Euclidean)
-          distance = sqrt((lat - last_case$lat)^2 + (long - last_case$long)^2)
-        ) %>%
-        filter(distance < 3)  # Within reasonable distance
-      
-      # Add cases to chain until we can't find more or reach desired size
-      while (nrow(potential_next_cases) > 0 && chain_size < min_cases_per_chain) {
-        # Add closest case to the chain
-        next_case <- potential_next_cases %>% arrange(distance) %>% head(1)
-        current_chain <- rbind(current_chain, next_case)
-        chain_size <- chain_size + 1
-        
-        # Update last case and find potential next cases
-        last_case <- next_case
-        potential_next_cases <- strain_data %>%
-          filter(
-            date > last_case$date,
-            date <= last_case$date + 14,
-            generation > last_case$generation
-          ) %>%
-          mutate(
-            distance = sqrt((lat - last_case$lat)^2 + (long - last_case$long)^2)
-          ) %>%
-          filter(distance < 3)
-      }
-      
-      # If chain is long enough, add it to our collection
-      if (chain_size >= min_cases_per_chain) {
-        current_chain$chain_id <- chain_id
-        current_chain$case_number <- 1:chain_size
-        all_chains[[chain_id]] <- current_chain
-        chain_id <- chain_id + 1
-      }
-    }
-  }
-  
-  # Combine all chains into a single dataframe
-  if (length(all_chains) > 0) {
-    result <- do.call(rbind, all_chains)
-    return(result)
-  } else {
-    # Return an empty dataframe with the same structure if no chains were found
-    return(data.frame(
-      id = character(0),
-      date = as.Date(character(0)),
-      lat = numeric(0),
-      long = numeric(0),
-      country = character(0),
-      city = character(0),
-      strain = character(0),
-      host = character(0),
-      transmission = character(0),
-      generation = numeric(0),
-      fitness = numeric(0),
-      chain_id = numeric(0),
-      case_number = numeric(0)
-    ))
-  }
-}
-
-# Generate transmission chains
-transmission_chains <- create_transmission_chains(human_transmissions, max_chains = 12, min_cases_per_chain = 5)
-
-# Create connection lines for the map
-create_connection_lines <- function(chains) {
-  connection_data <- data.frame()
-  
-  for (chain_id in unique(chains$chain_id)) {
-    chain_data <- chains %>% filter(chain_id == !!chain_id) %>% arrange(case_number)
-    
-    # Create connections between consecutive cases
-    for (i in 1:(nrow(chain_data) - 1)) {
-      connection <- data.frame(
-        chain_id = chain_id,
-        from_lat = chain_data$lat[i],
-        from_long = chain_data$long[i],
-        to_lat = chain_data$lat[i + 1],
-        to_long = chain_data$long[i + 1],
-        strain = chain_data$strain[i],
-        from_date = chain_data$date[i],
-        to_date = chain_data$date[i + 1],
-        from_city = chain_data$city[i],
-        to_city = chain_data$city[i + 1]
-      )
-      connection_data <- rbind(connection_data, connection)
-    }
-  }
-  
-  return(connection_data)
-}
-
-connection_data <- create_connection_lines(transmission_chains)
-
-# Create a color palette for the strains
-strains <- unique(transmission_chains$strain)
-strain_colors <- colorFactor(
-  palette = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33"),
-  domain = strains
-)
-
-# Add connection lines for each chain
-for (chain_id in unique(connection_data$chain_id)) {
-  chain_connections <- connection_data %>% filter(chain_id == !!chain_id)
-  strain <- unique(chain_connections$strain)
-  
-  for (i in 1:nrow(chain_connections)) {
-    connection <- chain_connections[i,]
-    
-    # Add a polyline for this connection
-    contact_tracing_map <- contact_tracing_map %>%
-      addPolylines(
-        lng = c(connection$from_long, connection$to_long),
-        lat = c(connection$from_lat, connection$to_lat),
-        color = strain_colors(strain),
-        weight = 2,
-        opacity = 0.7,
-        popup = paste(
-          "<strong>Transmission Chain:</strong>", chain_id, "<br>",
-          "<strong>Strain:</strong>", strain, "<br>",
-          "<strong>From:</strong>", connection$from_city, "<br>",
-          "<strong>To:</strong>", connection$to_city, "<br>",
-          "<strong>Period:</strong>", connection$from_date, "to", connection$to_date
-        )
-      )
-  }
-}
-
-# Add markers for each case in the chains
-for (chain_id in unique(transmission_chains$chain_id)) {
-  chain_data <- transmission_chains %>% filter(chain_id == !!chain_id)
-  strain <- unique(chain_data$strain)
-  
-  # Add patient zero with a larger marker
-  patient_zero <- chain_data %>% filter(case_number == 1)
-  contact_tracing_map <- contact_tracing_map %>%
-    addCircleMarkers(
-      lng = patient_zero$long,
-      lat = patient_zero$lat,
-      radius = 8,
-      color = "black",
-      weight = 1,
-      fillColor = strain_colors(strain),
-      fillOpacity = 0.9,
-      popup = paste(
-        "<strong>Patient Zero</strong><br>",
-        "<strong>Chain ID:</strong>", chain_id, "<br>",
-        "<strong>Strain:</strong>", strain, "<br>",
-        "<strong>Location:</strong>", patient_zero$city, ", ", patient_zero$country, "<br>",
-        "<strong>Date:</strong>", patient_zero$date, "<br>",
-        "<strong>Fitness:</strong>", round(patient_zero$fitness, 2)
-      )
-    )
-  
-  # Add remaining cases with smaller markers
-  other_cases <- chain_data %>% filter(case_number > 1)
-  contact_tracing_map <- contact_tracing_map %>%
-    addCircleMarkers(
-      lng = other_cases$long,
-      lat = other_cases$lat,
-      radius = 5,
-      color = "black",
-      weight = 1,
-      fillColor = strain_colors(other_cases$strain),
-      fillOpacity = 0.7,
-      popup = paste(
-        "<strong>Case #", other_cases$case_number, "</strong><br>",
-        "<strong>Chain ID:</strong>", chain_id, "<br>",
-        "<strong>Strain:</strong>", other_cases$strain, "<br>",
-        "<strong>Location:</strong>", other_cases$city, ", ", other_cases$country, "<br>",
-        "<strong>Date:</strong>", other_cases$date, "<br>",
-        "<strong>Fitness:</strong>", round(other_cases$fitness, 2)
-      )
-    )
-}
-
-# Add a legend
-contact_tracing_map <- contact_tracing_map %>%
-  addLegend(
-    position = "bottomright",
-    colors = strain_colors(strains),
-    labels = strains,
-    title = "Virus Strains",
-    opacity = 0.7
-  )
-
-# Add a title and explanation using HTML
-contact_tracing_map <- contact_tracing_map %>%
-  addControl(
-    html = "<h3>Lassa Virus Human-to-Human Transmission Chains</h3>
-           <p>Lines represent probable transmission paths between cases.<br>
-           Larger circles indicate index cases (patient zeros) for each chain.</p>",
-    position = "topright"
-  )
-
-# Save the map
-saveWidget(contact_tracing_map, "lassa_contact_tracing_map.html", selfcontained = TRUE)
-
-# Display the map
-contact_tracing_map
-
-```
-
-```{python}
-import networkx as nx
-import plotly.graph_objects as go
-
-# Create graph from the data (simplified for clarity)
-G = nx.DiGraph()
-
-# Only showing first 300 for clarity
-subset = df.sample(n=300, random_state=1)
-
-for _, row in subset.iterrows():
-    node_id = f"{row['clade']} ({row['host']})"
-    G.add_node(node_id, strain=row['strain'], host=row['host'], city=row['city'], fitness=row['fitness'])
-
-# Simulate edges for now (ideally you'd have a parent-child relationship from simulation)
-edges = list(zip(subset['clade'][:-1], subset['clade'][1:]))
-for e1, e2 in edges:
-    G.add_edge(f"{e1} (rodent)", f"{e2} (rodent)")
-
-pos = nx.spring_layout(G, k=0.3)
-
-edge_x = []
-edge_y = []
-for edge in G.edges():
-    x0, y0 = pos[edge[0]]
-    x1, y1 = pos[edge[1]]
-    edge_x += [x0, x1, None]
-    edge_y += [y0, y1, None]
-
-edge_trace = go.Scatter(
-    x=edge_x, y=edge_y,
-    line=dict(width=0.5, color='#888'),
-    hoverinfo='none',
-    mode='lines')
-
-node_x = []
-node_y = []
-node_text = []
-colors = []
-
-for node in G.nodes():
-    x, y = pos[node]
-    node_x.append(x)
-    node_y.append(y)
-    node_text.append(node)
-    colors.append('red' if 'human' in node else 'green')
-
-node_trace = go.Scatter(
-    x=node_x, y=node_y,
-    mode='markers+text',
-    textposition="top center",
-    hovertext=node_text,
-    marker=dict(
-        color=colors,
-        size=10,
-        line_width=1))
-
-fig = go.Figure(data=[edge_trace, node_trace],
-                layout=go.Layout(
-                    title='<b>Lassa Clade Transmission Network</b>',
-                    showlegend=False,
-                    hovermode='closest',
-                    margin=dict(b=20,l=5,r=5,t=40)))
-
-fig.show()
-
-```
-
-
