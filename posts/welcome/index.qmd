@@ -1,6 +1,6 @@
 ---
 title: "Welcome To My Blog"
-author: "Tristan O'Malley"
+author: "Justice Amenyo Kessie"
 date: "2025-04-10"
 categories: [news]
 ---
