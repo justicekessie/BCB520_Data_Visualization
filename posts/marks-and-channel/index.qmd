@@ -1,0 +1,109 @@
+---
+title: "Assignment 4: Marks and Channels"
+author: "Justice Kessie"
+date: "2025-03-24"
+categories: [news, code, analysis]
+image: "image.png"
+---
+
+Expressiveness and Effectiveness
+
+```{r}
+library(ggplot2)
+data(mtcars)
+
+ggplot(mtcars, aes(x = mpg, y = hp, color = factor(cyl))) +
+  geom_point(size = 3) +
+  labs(title = "Proper Use of Marks and Channels",
+       x = "Miles per Gallon (mpg)",
+       y = "Horsepower (hp)",
+       color = "Cylinders")
+```
+
+Caption: Figure 1 shows the relationship between miles per gallon (mpg) and horsepower (hp) using color to distinguish between different numbers of cylinders. This adheres to the expressiveness and effectiveness principles.
+
+```{r}
+library(datasets)
+library(ggplot2)
+ggplot(mtcars, aes(x = mpg, y = hp, size = factor(cyl), shape = factor(cyl), color = factor(cyl))) +
+  geom_point() +
+  labs(title = "Violation of Marks and Channels",
+       x = "Miles per Gallon (mpg)",
+       y = "Horsepower (hp)",
+       size = "Cylinders",
+       shape = "Cylinders",
+       color = "Cylinders")
+```
+
+**Caption**: Figure 2 uses size, shape, and color to encode the number of cylinders, violating the expressiveness and effectiveness principles. It creates visual clutter and confusion.
+
+```{r}
+ggplot(mtcars, aes(x = mpg)) +
+  geom_histogram(binwidth = 2, fill = "skyblue", color = "white") +
+  labs(title = "Proper Discriminability",
+       x = "Miles per Gallon (mpg)",
+       y = "Count")
+```
+
+**Caption**: Figure 3 uses an appropriate number of bins for the histogram, facilitating discriminability of the mpg attribute.
+
+```{r}
+ggplot(mtcars, aes(x = mpg)) +
+  geom_histogram(binwidth = 0.5, fill = "skyblue", color = "white") +
+  labs(title = "Violation of Discriminability",
+       x = "Miles per Gallon (mpg)",
+       y = "Count")
+
+```
+
+**Caption**: Figure 4 uses too many bins, violating the guidelines for discriminability and making it difficult to interpret the distribution of mpg.
+
+```{r}
+ggplot(mtcars, aes(x = mpg, y = hp, color = factor(cyl), shape = factor(gear))) +
+  geom_point(size = 3) +
+  labs(title = "Proper Separability",
+       x = "Miles per Gallon (mpg)",
+       y = "Horsepower (hp)",
+       color = "Cylinders",
+       shape = "Gears")
+
+```
+
+**Caption**: Figure 5 uses separate color and shape channels to encode the number of cylinders and gears, maintaining separability.
+
+```{r}
+ggplot(mtcars, aes(x = mpg, y = hp, fill = factor(cyl), alpha = hp)) +
+  geom_point(size = 5, shape = 21) +
+  labs(title = "Violation of Separability",
+       x = "Miles per Gallon (mpg)",
+       y = "Horsepower (hp)",
+       fill = "Cylinders",
+       alpha = "Horsepower")
+
+```
+
+**Caption**: Figure 6 uses fill color and transparency, which are less separable, to encode the number of cylinders and horsepower, violating the principle of separability.
+
+```{r}
+ggplot(mtcars, aes(x = mpg, y = hp)) +
+  geom_point(size = 3, color = "grey") +
+  geom_point(data = subset(mtcars, cyl == 4), aes(x = mpg, y = hp), color = "red", size = 4) +
+  labs(title = "Effective Popout",
+       x = "Miles per Gallon (mpg)",
+       y = "Horsepower (hp)")
+
+```
+
+**Caption**: Figure 7 highlights cars with 4 cylinders in red, effectively using the concept of popout.
+
+```{r}
+ggplot(mtcars, aes(x = mpg, y = hp, color = factor(cyl))) +
+  geom_point(size = 3) +
+  labs(title = "Ineffective Popout",
+       x = "Miles per Gallon (mpg)",
+       y = "Horsepower (hp)",
+       color = "Cylinders")
+
+```
+
+**Caption**: Figure 8 uses color to distinguish all cylinder counts, making it difficult to identify specific points and failing to achieve the popout effect compared to Figure 7.

@@ -1,0 +1,399 @@
+---
+title: "Assignment 5: NHL Player Performance Analysis"
+author: "Justice Kessie"
+date: "2025-03-24"
+categories: [news, code, analysis]
+image: "image.png"
+---
+
+```{r}
+# Load necessary libraries
+require(dplyr)
+require(ggplot2)
+require(tidyr)
+require(lubridate)
+require(tidyverse)
+require(readr)
+```
+
+## Hart Memorial Trophy Consideration: Identifying the Top-Performing NHL Players to their Respective Teams
+
+To identify the top-performing NHL players for the Hart Memorial Trophy consideration, we need to analyze player performance based on key metrics such as goals, assists, points, and plus-minus rating. The following R code snippet demonstrates how to load and analyze NHL player data to identify the top-performing players based on these metrics.
+
+```{r}
+# Load the dataset
+nhl_lines <- read.csv("lines.csv")
+```
+
+```{r, include=FALSE}
+colnames(nhl_lines)
+```
+
+To do this, we created key metrics such as net value, net value per 60 minutes, team share, and "most valuable player" (MVP) score to evaluate player performance. We then filtered the dataset to include only players with a sufficient number of games played and calculated the MVP score for each player based on these metrics.
+
+MVP Score measures the player's overall contribution to the team's success, considering their performance in key areas such as goals, assists, and time on ice. The formula for MVP Score is a combination of net value per 60 minutes, time on ice, and team contribution percentage. The higher the MVP Score, the more valuable the player is to their team.
+
+```{r, include=FALSE}
+# Examine data structure
+head(nhl_lines)
+recent_season <- max(nhl_lines$season)
+
+# Create key metrics
+players <- nhl_lines[nhl_lines$season == recent_season, ]
+players <- players[!is.na(players$xGoalsFor) & !is.na(players$xGoalsAgainst) & !is.na(players$icetime), ]
+
+# Calculate per-60 rates and value metrics
+players$netValue <- players$xGoalsFor - players$xGoalsAgainst
+players$netValue_per60 <- players$netValue / players$icetime * 60
+
+# Identify team totals for contribution percentage
+team_totals <- aggregate(xGoalsFor ~ team, data=players, FUN=sum, na.rm=TRUE)
+names(team_totals)[2] <- "team_xGoalsTotal"
+players <- merge(players, team_totals, by="team")
+players$team_share <- players$xGoalsFor / players$team_xGoalsTotal * 100
+
+# Simple MVP formula
+players$mvp_score <- players$netValue_per60 * sqrt(players$icetime) * (players$team_share/100)
+
+# Filter for players with enough games
+qualified <- players[players$games_played >= 50, ]
+hart_ballot <- qualified[order(-qualified$mvp_score), ]
+top5 <- head(hart_ballot, 5)
+
+```
+
+```{r}
+# Results
+print(top5[, c("name", "team", "position", "mvp_score", "netValue_per60", "icetime", "team_share")])
+```
+
+```{r}
+# Top 10 MVP scores
+ggplot(head(hart_ballot, 10), aes(x=reorder(name, mvp_score), y=mvp_score, fill=team)) +
+  geom_bar(stat="identity") +
+  coord_flip() +
+  labs(title="Hart Trophy Candidates: MVP Score", x="Player", y="MVP Score") +
+  theme_minimal()
+```
+
+The results shows that the pair Ekholm-Bouchard are the top-performing players based on the MVP score (0.705), followed by the triple Hyman-McDavid-Draisaitl for team Edmonton Oilers. The pairs Slavis-Burns, Gostisbehere-Walker, and Orlov-Chatfield also played an indispensable role in team CAR.
+
+Meanwhile the Hartman Memorial trophy goes to the pair Ekholm-Bouchard for their outstanding performance in the recent season.
+
+## Vezina Trophy Consideration: Identifying the Top-Performing NHL Goalies
+
+To find the best goalies in the NHL, we need to analyze their performance based on key metrics such as save percentage and goals against average (GAA). The following R code snippet demonstrates how to load and analyze NHL goalie data to identify the top-performing goalies based on these metrics for the Vezina Trophy consideration.
+
+```{r}
+# Load the dataset
+shots_data <- read.csv("shots_2024.csv")
+```
+
+```{r, include=FALSE}
+# View the first few rows
+head(shots_data)
+
+# Check column names
+#colnames(shots_data)
+
+```
+
+We summarize the goalie performance based on the number of shots faced, goals allowed, saves made, save percentage, and games played. We then calculate the goals against average (GAA) for each goalie to further evaluate their performance.
+
+```{r}
+goalie_stats <- shots_data %>%
+  filter(shotWasOnGoal == 1) %>%  # Only consider shots on goal
+  group_by(goalieNameForShot) %>%
+  summarise(
+    Shots_On_Goal = n(),
+    Goals_Allowed = sum(goal),
+    Saves = Shots_On_Goal - Goals_Allowed,
+    Save_Percentage = Saves / Shots_On_Goal,
+    Games_Played = n_distinct(game_id)
+  ) %>%
+  arrange(desc(Save_Percentage))
+
+# View top goalies
+head(goalie_stats)
+```
+
+Next, we calculate the goals against average (GAA) for each goalie by dividing the total goals allowed by the total games played. We then merge the two datasets to compare the goalies based on save percentage and GAA.
+
+```{r}
+goalie_gaa <- shots_data %>%
+  filter(shotWasOnGoal == 1) %>%
+  group_by(goalieNameForShot) %>%
+  summarise(
+    Goals_Allowed = sum(goal),
+    Games_Played = n_distinct(game_id),
+    GAA = (Goals_Allowed * 60) / (Games_Played * 60)  # Approximate per 60 minutes
+  ) %>%
+  arrange(GAA)
+
+# View best GAA goalies
+head(goalie_gaa)
+
+```
+
+```{r}
+## Merge the two datasets and delete the duplicate colummns
+goalie_performance <- merge(goalie_stats, goalie_gaa, by="goalieNameForShot")
+
+# Rank by Save Percentage and GAA
+goalie_performance <- goalie_performance %>%
+  arrange(desc(Save_Percentage), GAA)
+
+# View top-ranked goalies
+head(goalie_performance)
+
+```
+
+To filter out goalies who have faced a minimum number of shots and played a minimum number of games, we set thresholds for shots faced and games played. We then filter the dataset to include only goalies who meet these criteria. By the way, forgo the duplicate columns.
+
+```{r}
+# Set a threshold for minimum shots faced
+min_shots <- 1000
+min_games_played <- 50
+
+# Filter goalies who faced at least 'min_shots'
+goalie_performance_filtered <- goalie_performance %>%
+  filter(Shots_On_Goal >= min_shots & Games_Played.x >= min_games_played) %>%
+  arrange(desc(Save_Percentage), GAA)
+
+# View the updated rankings
+head(goalie_performance_filtered)
+
+```
+
+Finally, we create a scatter plot to visualize the relationship between save percentage and goals against average for the top-performing goalies. We use point size to represent the number of shots faced by each goalie. The plot provides a clear comparison of goalie performance based on these key metrics.
+
+```{r}
+ggplot(goalie_performance_filtered, aes(x = Save_Percentage, y = GAA, label = goalieNameForShot, size = Shots_On_Goal)) +
+  geom_point(alpha = 0.8) +  # Semi-transparent points for better visualization
+  geom_text(vjust = -1, hjust = 0.5, size = 3.5, fontface = "bold") +  # Clearer labels
+  scale_size(range = c(3, 8)) +  # Adjust point sizes for better distinction
+  labs(
+    title = "🏒 Goalie Performance: Save Percentage vs Goals Against Average",
+    subtitle = paste("Minimum", min_shots, "shots faced required for inclusion"),
+    x = "Save Percentage (Higher is Better)",
+    y = "Goals Against Average (Lower is Better)",
+    size = "Shots Faced"
+  ) +
+  theme_minimal()
+```
+
+We adjudge Connor Hellebuyck, Andrei Vasilevskiy, and Ilya Sorokin as the top-3-performing goalies based on save percentage, goals against average and games played, with Connor being the best goaltender for the Vezina Trophy.
+
+## James Norris Memorial Trophy Consideration: Identifying the "Best All-Around" Defenseman
+
+Here, we used the NHL Draft Stats dataset to identify the top defensemen based on key metrics such as points per game, assists per game, goals per game, offensive score, and defensive score. We then filtered the dataset to include only defensemen who played more than 50 games and ranked them based on their offensive and defensive scores.
+
+```{r}
+# Load the dataset
+NHLDraftStats <- read.csv("SkaterIndividualstats.csv")
+```
+
+```{r, include=FALSE}
+# View the first few rows
+colnames(NHLDraftStats)
+```
+
+Offensive score is calculated as the sum of points per game, assists per game, and goals per game, while defensive score is calculated as the sum of shots blocked, hits, takeaways, and penalized by giveaways per game. We then rank the defensemen based on their offensive and defensive scores to identify the top performers.
+
+```{r}
+# Filter out defensemen
+defensemen <- NHLDraftStats %>% filter(Position == "D")
+# Compute key metrics
+defensemen <- defensemen %>%
+  mutate(
+    PPG = Total.Points / GP, # points per game
+    APG = Total.Assists / GP,# assists per game
+    GPG = Goals / GP,   # goals per game
+    Offensive.Score  = PPG + APG + GPG, # offensive score
+    Defensive.Score = (Shots.Blocked + Hits + Takeaways - Giveaways) / GP
+  )
+
+# Shortlisted to players who played more than 50 games
+defensemen <- defensemen %>% filter(GP > 50)
+
+# Rank players based on Defensive Score PPG and total points
+top_defensemen <- defensemen %>% 
+  arrange(desc(Defensive.Score + Offensive.Score)) %>% 
+  head(10)
+```
+
+Here is a visualization of the top 5 defensemen based on their total points, combining offensive and defensive scores. The bar chart provides a clear comparison of the top defensemen based on their overall performance.
+
+```{r}
+# Bar chart of total points
+ggplot(top_defensemen, aes(x = reorder(Player, -(Defensive.Score * Offensive.Score)), y = Defensive.Score * Offensive.Score, fill = Player)) +
+  geom_bar(stat = 'identity') +
+  labs(title = 'Top 5 Defensemen - Total Points', x = 'Player', y = 'Total Points') +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+We ranked Moritz Seider, MacKenzie Weegar, Cale Makar, Colton Parayko and Neal Pionk as the top 5 defensemen based on their overall performance. Moritz Seider is the best defenseman for the James Norris Memorial Trophy.
+
+## Calder Memorial Trophy Consideration: Identifying the Top Rookie Performer
+
+```{r}
+# Load the dataset
+rookie_stats <- read.csv("RookieSkaterIndividual.csv")
+
+```
+
+```{r, include=TRUE}
+# View the first few rows
+colnames(rookie_stats)
+```
+
+```{r}
+# Compute key metrics
+rookies <- rookie_stats %>%
+  mutate(
+    PPG = Total.Points / GP,
+    APG = Total.Assists / GP,
+    GPG = Goals / GP,
+    Rookie.Score = (Total.Points + (Takeaways - Giveaways) + Shots + Hits) / GP,
+    PPGRS = PPG * Rookie.Score # combined metric of PPG and Rookie Score
+  )
+
+# Rank players based on overall Rookie Score
+top_rookies <- rookies %>% 
+  arrange(desc(Rookie.Score)) %>% 
+  head(10)
+
+# Ensure PPG is not missing or NA
+top_rookies <- top_rookies %>% filter(!is.na(PPG))
+```
+
+```{r}
+ggplot(top_rookies, aes(x = reorder(Player, -PPGRS))) +
+  geom_bar(aes(y = PPGRS, fill = Player), stat = 'identity', alpha = 0.7) +
+  geom_line(aes(y = PPG * max(Rookie.Score, na.rm = TRUE) / max(PPG, na.rm = TRUE), group = 1), 
+            color = 'blue', linewidth = 1) +
+  geom_point(aes(y = PPG * max(Rookie.Score, na.rm = TRUE) / max(PPG, na.rm = TRUE)), 
+             color = 'blue', size = 3) +
+  scale_y_continuous(
+    name = 'Rookie Score', 
+    sec.axis = sec_axis(~ . * max(top_rookies$PPG, na.rm = TRUE) / max(top_rookies$Rookie.Score, na.rm = TRUE), 
+                        name = 'PPG')
+  ) +
+  labs(title = 'Top 5 Rookies - Rookie Score & PPG', x = 'Player') +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Frank J. Selke Trophy Consideration: Identifying the Best Defensive Forward
+
+```{r}
+# Using the previous dataset
+# Filtering for forwards and calculating Selke Score
+forwards <- rookie_stats %>%
+  filter(Position != "D" & GP >= 50) %>%  
+  mutate(
+    Takeaway_Ratio = Takeaways / (Takeaways + Giveaways),
+    Blocked_Shot_Rate = Shots.Blocked / TOI * 60,
+    Faceoff_Effectiveness = ifelse(Faceoffs.Won + Faceoffs.Lost > 0, 
+                                  Faceoffs.Won / (Faceoffs.Won + Faceoffs.Lost), 0),
+    Penalty_Discipline = 1 - (PIM / (TOI/60)),
+    
+    # Combine into Selke Score
+    Selke_Score = (
+      (Takeaway_Ratio * 2.5) +          # Takeaways and giveaways
+      (Blocked_Shot_Rate * 1.5) +        # Blocking shots as a forward
+      (Faceoff_Effectiveness * 2) +      # Winning defensive zone faceoffs
+      (Penalty_Discipline * 1.5) +       # Staying out of the box
+      (Hits * 0.05) +                    # Physical play
+      (TOI / max(TOI, na.rm = TRUE) * 1.5)  # Coaches trust (ice time)
+    )
+  ) %>%
+  # Scale the score for easier interpretation
+  mutate(Selke_Score = Selke_Score / max(Selke_Score, na.rm = TRUE) * 100)
+head(forwards)
+
+```
+
+```{r}
+# View the top Selke candidates
+top_selke_candidates <- forwards %>%
+  arrange(desc(Selke_Score)) %>%
+  select(Player, Team, Position, GP, Selke_Score) %>%
+  head(10)
+
+top_selke_candidates <- top_selke_candidates %>%
+  mutate(
+    Expected_Selke = mean(Selke_Score),  # You can define your own expected value
+    Selke_Deviation = Selke_Score - Expected_Selke
+  )
+```
+
+```{r}
+# Create a diverging bar chart
+ggplot(top_selke_candidates, aes(x = reorder(Player, Selke_Score), y = Selke_Deviation, fill = Selke_Deviation > 0)) +
+  geom_bar(stat = 'identity') +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+  scale_fill_manual(values = c("firebrick", "steelblue"), 
+                    labels = c("Below Expected", "Above Expected"),
+                    name = "") +
+  labs(
+    title = 'Top Selke Candidates - Deviation from Expected Selke Score',
+    x = 'Player', 
+    y = 'Deviation from Expected Selke Score'
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major.y = element_line(color = "gray90"),
+    panel.grid.minor = element_blank(),
+    legend.position = "bottom"
+  )
+```
+
+## Lady Byng Memorial Trophy Consideration: Identifying the Most Sportsmanlike Player
+
+```{r}
+Sportsman <- read.csv("SkaterIndividualstats.csv")
+```
+
+```{r}
+colnames(Sportsman)
+```
+
+```{r}
+## Compute key metrics
+Sportsman <- Sportsman %>%
+  mutate(
+    PIM_Ratio = PIM / GP,  # Penalty minutes per game
+    PIM_Ratio = ifelse(is.na(PIM_Ratio), 0, PIM_Ratio),  # Replace NA with 0
+    PIM_Ratio = ifelse(PIM_Ratio > 10, 10, PIM_Ratio),  # Cap at 10
+    PIM_Ratio = PIM_Ratio / 10,  # Scale to 0-1
+    PIM_Ratio = 1 - PIM_Ratio,  # Reverse scale
+    PIM_Ratio = PIM_Ratio * 100  # Scale to 0-100
+  )
+
+Sportsman <- Sportsman %>%
+  filter(GP >= 50) %>%
+  mutate(
+    Sportsman_Score = (
+      (PIM_Ratio * 2) +  # Low penalty minutes
+      (Hits * 0.5) +     # Physical play
+      (Giveaways * 0.5)  # Few giveaways
+    )
+  )
+
+top_sportsman <- Sportsman %>%
+  arrange(desc(Sportsman_Score)) %>%
+  head(10)
+```
+
+```{r}
+## Create a unique visualization
+ggplot(top_sportsman, aes(x = reorder(Player, -Sportsman_Score), y = Sportsman_Score, fill = Sportsman_Score)) +
+  geom_bar(stat = 'identity') +
+  labs(title = 'Top 5 Sportsman Candidates - Sportsman Score', x = 'Player', y = 'Sportsman Score') +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```

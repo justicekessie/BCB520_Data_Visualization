@@ -1,0 +1,15 @@
+{
+  "hash": "c63e90d93e0ef92abfc3e86f7fd8ac28",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Midterm and Final Project\"\nauthor: \"Justice Kessie\"\ndate: \"2025-03-24\"\ncategories: [news, code, analysis]\nimage: \"image.jpeg\"\n---\n\n\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

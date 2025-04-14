@@ -1,0 +1,17 @@
+{
+  "hash": "92d60272404a03dba0551ece7a94a711",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Assignment 1: Anscombe's Quartet\"\nauthor: \"Justice Kessie\"\ndate: \"2025-03-24\"\ncategories: [news, code, analysis]\nimage: \"image.jpeg\"\n---\n\n::: {.cell}\n\n```{.r .cell-code}\n# Load necessary libraries\nlibrary(ggplot2)\nlibrary(dplyr)\n```\n\n::: {.cell-output .cell-output-stderr}\n\n```\n\nAttaching package: 'dplyr'\n```\n\n\n:::\n\n::: {.cell-output .cell-output-stderr}\n\n```\nThe following objects are masked from 'package:stats':\n\n    filter, lag\n```\n\n\n:::\n\n::: {.cell-output .cell-output-stderr}\n\n```\nThe following objects are masked from 'package:base':\n\n    intersect, setdiff, setequal, union\n```\n\n\n:::\n\n```{.r .cell-code}\nlibrary(tidyr)\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\n# Load the dataset\ndata(anscombe)\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\n# Convert the data into a tidy format for ggplot\nanscombe_tidy <- anscombe %>%\n  pivot_longer(everything(), names_to = c(\".value\", \"set\"), names_pattern = \"(.)(.)\")\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\n# Plot the four datasets\nggplot(anscombe_tidy, aes(x = x, y = y)) +\n  geom_point(color = \"steelblue\", size = 2) +\n  geom_smooth(method = \"lm\", se = FALSE, color = \"red\", linetype = \"dashed\") +\n  facet_wrap(~set) +\n  theme_minimal() +\n  labs(title = \"Anscombe's Quartet\",\n       subtitle = \"Each dataset has nearly identical summary statistics\",\n       x = \"X\",\n       y = \"Y\")\n```\n\n::: {.cell-output .cell-output-stderr}\n\n```\n`geom_smooth()` using formula = 'y ~ x'\n```\n\n\n:::\n\n::: {.cell-output-display}\n![](index_files/figure-html/unnamed-chunk-4-1.png){width=672}\n:::\n:::\n",
+    "supporting": [
+      "index_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

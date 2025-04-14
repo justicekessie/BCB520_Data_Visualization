@@ -1,0 +1,39 @@
+---
+title: "Assignment 1: Anscombe's Quartet"
+author: "Justice Kessie"
+date: "2025-03-24"
+categories: [news, code, analysis]
+image: "image.jpeg"
+---
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+```{r}
+# Load the dataset
+data(anscombe)
+```
+
+```{r}
+# Convert the data into a tidy format for ggplot
+anscombe_tidy <- anscombe %>%
+  pivot_longer(everything(), names_to = c(".value", "set"), names_pattern = "(.)(.)")
+```
+
+```{r}
+# Plot the four datasets
+ggplot(anscombe_tidy, aes(x = x, y = y)) +
+  geom_point(color = "steelblue", size = 2) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  facet_wrap(~set) +
+  theme_minimal() +
+  labs(title = "Anscombe's Quartet",
+       subtitle = "Each dataset has nearly identical summary statistics",
+       x = "X",
+       y = "Y")
+
+```

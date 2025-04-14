@@ -1,0 +1,16 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "BCB520_Data_Visualization",
+    "section": "",
+    "text": "Welcome To My Blog\n\n\n\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nApr 10, 2025\n\n\nTristan O’Malley\n\n\n\n\n\n\n\n\n\n\n\n\nAssignment 1: Anscombe’s Quartet\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nMar 24, 2025\n\n\nJustice Kessie\n\n\n\n\n\n\n\n\n\n\n\n\nAssignment 2: COVID-19 Data Visualization\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nMar 24, 2025\n\n\nJustice Kessie\n\n\n\n\n\n\n\n\n\n\n\n\nAssignment 2: COVID-19 Data Visualization\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nMar 24, 2025\n\n\nJustice Kessie\n\n\n\n\n\n\n\n\n\n\n\n\nAssignment 3: COVID-19 Strain Dynamics\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nMar 24, 2025\n\n\nJustice Kessie\n\n\n\n\n\n\n\n\n\n\n\n\nAssignment 5: NHL Player Performance Analysis\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nMar 24, 2025\n\n\nJustice Kessie\n\n\n\n\n\n\n\n\n\n\n\n\nAssignment 4: Marks and Channels\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nMar 24, 2025\n\n\nJustice Kessie\n\n\n\n\n\n\n\n\n\n\n\n\nMidterm and Final Project\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nMar 24, 2025\n\n\nJustice Kessie\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "posts/assignment-i/index.html",
+    "href": "posts/assignment-i/index.html",
+    "title": "Assignment 1: Anscombe’s Quartet",
+    "section": "",
+    "text": "# Load necessary libraries\nlibrary(ggplot2)\nlibrary(dplyr)\n\n\nAttaching package: 'dplyr'\n\n\nThe following objects are masked from 'package:stats':\n\n    filter, lag\n\n\nThe following objects are masked from 'package:base':\n\n    intersect, setdiff, setequal, union\n\nlibrary(tidyr)\n\n\n# Load the dataset\ndata(anscombe)\n\n\n# Convert the data into a tidy format for ggplot\nanscombe_tidy &lt;- anscombe %&gt;%\n  pivot_longer(everything(), names_to = c(\".value\", \"set\"), names_pattern = \"(.)(.)\")\n\n\n# Plot the four datasets\nggplot(anscombe_tidy, aes(x = x, y = y)) +\n  geom_point(color = \"steelblue\", size = 2) +\n  geom_smooth(method = \"lm\", se = FALSE, color = \"red\", linetype = \"dashed\") +\n  facet_wrap(~set) +\n  theme_minimal() +\n  labs(title = \"Anscombe's Quartet\",\n       subtitle = \"Each dataset has nearly identical summary statistics\",\n       x = \"X\",\n       y = \"Y\")\n\n`geom_smooth()` using formula = 'y ~ x'"
+  }
+]

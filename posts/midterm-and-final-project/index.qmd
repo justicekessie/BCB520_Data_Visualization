@@ -1,0 +1,31 @@
+---
+title: "Midterm and Final Project"
+author: "Justice Kessie"
+date: "2025-03-24"
+categories: [news, code, analysis]
+image: "image.jpeg"
+---
+
+
+```{r, include=FALSE}
+# Load required libraries
+library(tidyverse)
+library(lubridate)
+library(leaflet)
+library(htmlwidgets)
+library(plotly)
+library(igraph)
+library(ape)
+library(phangorn)
+library(RColorBrewer)
+library(leaflet.extras)
+
+# Load the data
+df <- read.csv('lassa_virus_simulation_data.csv')
+
+# Convert date column to Date
+df$date <- as.Date(df$date)
+
+```
+
+

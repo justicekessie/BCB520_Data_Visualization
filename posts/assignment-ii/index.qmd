@@ -1,0 +1,231 @@
+---
+title: "Assignment 2: COVID-19 Data Visualization"
+author: "Justice Kessie"
+date: "2025-03-24"
+categories: [news, code, analysis]
+image: "image.png"
+---
+
+## Description of Data
+
+The covid_ts dataset tracks the daily counts of COVID-19 infections and deaths across U.S. states, broken down by different virus strains. It includes several key columns: the date, state, total infections, deaths, and daily case counts for each COVID-19 strain— *Original*, *Alpha*, *Delta*, and *Omicron*. The date column records the day of the entry, while the state column tells you which U.S. state the data pertains to. The total_infections column gives the overall count of COVID-19 cases, and deaths shows the number of lives lost to the virus. The strain-specific columns break down the daily cases for each variant: *Original*, *Alpha*, *Delta*, and *Omicron*.
+
+The dataset begins in early 2020, during the first wave of the pandemic, and continues through the various waves caused by the emergence of new strains. These variants, like Alpha, Delta, and Omicron, had different levels of contagiousness and impacts on public health, which is reflected in their infection and death rates. For instance, the Alpha variant, emerging in late 2020, was more easily spread than the original strain, while Delta, which appeared in 2021, caused a major global surge. Omicron, emerging toward the end of 2021, was highly transmissible but led to fewer severe cases compared to previous strains.
+
+By analyzing this dataset, we can track how each variant's dominance shifted over time and across regions. It provides insight into when and where each strain became the most prevalent, shedding light on regional variations in how COVID-19 spread. Additionally, the dataset allows us to explore how mortality rates changed with each variant. By comparing death counts for each strain, we can gain a better understanding of how the severity of the virus evolved. Overall, the dataset is a powerful tool for both public health policy makers and epidemiological researchers. It allows us to visualize how the virus spread geographically and how different variants impacted different regions at various times. For example, using pie charts, we can easily show the proportion of each strain in different states, offering a clear picture of how the pandemic unfolded across the U.S. over time.
+
+```{r}
+# Required packages
+library(tidyverse)
+library(lubridate)
+library(maps)
+library(gganimate)
+library(gifski)
+
+```
+
+```{r, include=FALSE}
+#| echo: false
+#set.seed(123)
+
+# Simplified state coordinates data with proper region conversion
+states <- tibble(
+  state = state.name,
+  longitude = state.center$x,
+  latitude = state.center$y,
+  region = as.character(state.region)
+)
+
+# Time parameters
+start_date <- as.Date("2020-01-01")
+end_date <- as.Date("2022-12-31")
+dates <- seq(start_date, end_date, by = "day")
+
+# Strain configuration
+strains <- c("Original", "Alpha", "Delta", "Omicron")
+strain_emergence <- list(
+  Original = as.Date("2020-01-01"),
+  Alpha = as.Date("2020-09-01"),
+  Delta = as.Date("2021-03-01"),
+  Omicron = as.Date("2021-11-01")
+)
+
+calculate_strain_probs <- function(date, region) {
+  date <- as.Date(date)
+  region <- as.character(region)
+  
+  region_modifier <- case_when(
+    region == "Northeast" ~ 1.2,
+    region == "South" ~ 1.0,
+    region == "North Central" ~ 0.9,
+    region == "West" ~ 1.1,
+    TRUE ~ 1.0
+  )
+  
+  get_strain_prob <- function(strain_date, fitness) {
+    strain_date <- as.Date(strain_date)
+    days_since_emergence <- as.numeric(difftime(date, strain_date, units = "days"))
+    if (days_since_emergence < 0) return(0)
+    1 / (1 + exp(-fitness * region_modifier * (days_since_emergence/100 - 3)))
+  }
+  
+  probs <- c(
+    Original = get_strain_prob(strain_emergence$Original, 0.8),
+    Alpha = get_strain_prob(strain_emergence$Alpha, 1.0),
+    Delta = get_strain_prob(strain_emergence$Delta, 1.2),
+    Omicron = get_strain_prob(strain_emergence$Omicron, 1.5)
+  )
+  
+  probs <- pmax(0, probs + rnorm(length(probs), 0, 0.02))
+  if (sum(probs) == 0) probs <- c(1, 0, 0, 0)
+  probs / sum(probs)
+}
+```
+
+```{r, include=FALSE}
+# Generate data with proper strain distribution
+covid_ts <- tibble()
+
+for(s in states$state) {
+  state_region <- as.character(states$region[states$state == s])
+  
+  for(d in dates) {
+    d <- as.Date(d)
+    
+    day_of_year <- yday(d)
+    seasonal_factor <- 1 + 0.3 * sin(2 * pi * (day_of_year - 30)/365)
+    base_rate <- 100 * seasonal_factor
+    
+    # Calculate probabilities for each strain
+    probs <- calculate_strain_probs(d, state_region)
+    
+    # Generate total infections
+    total_infections <- rpois(1, lambda = base_rate)
+    
+    # Distribute infections across strains
+    if(total_infections > 0) {
+      strain_counts <- rmultinom(1, total_infections, probs)[,1]
+    } else {
+      strain_counts <- rep(0, length(strains))
+    }
+    names(strain_counts) <- strains
+    
+    # Calculate deaths for each strain separately
+    mortality_rates <- c(Original = 0.02, Alpha = 0.025, Delta = 0.035, Omicron = 0.01)
+    deaths <- sum(sapply(1:length(strains), function(i) {
+      rbinom(1, strain_counts[i], mortality_rates[strains[i]])
+    }))
+    
+    # Create daily record with proper strain distribution
+    daily_data <- tibble(
+      date = d,
+      state = s,
+      total_infections = total_infections,
+      deaths = deaths,
+      Original = strain_counts["Original"],
+      Alpha = strain_counts["Alpha"],
+      Delta = strain_counts["Delta"],
+      Omicron = strain_counts["Omicron"]
+    )
+    
+    covid_ts <- bind_rows(covid_ts, daily_data)
+  }
+  
+  cat("Processed state:", s, "\n")
+}
+
+# Verify that strains sum to total infections
+check_sums <- covid_ts %>%
+  mutate(
+    strain_sum = Original + Alpha + Delta + Omicron,
+    matches = strain_sum == total_infections
+  )
+```
+
+```{r}
+# Print summary to verify strain distribution
+summary_stats <- covid_ts %>%
+  group_by(state) %>%
+  summarise(
+    total_cases = sum(total_infections, na.rm = TRUE),
+    total_original = sum(Original, na.rm = TRUE),
+    total_alpha = sum(Alpha, na.rm = TRUE),
+    total_delta = sum(Delta, na.rm = TRUE),
+    total_omicron = sum(Omicron, na.rm = TRUE)
+  )
+print(summary_stats)
+```
+
+```{r, include=FALSE}
+# Create visualization of dominant strains
+# Modify the dominant strains data to ensure unique state-month-year combinations
+dominant_strains <- covid_ts %>%
+  mutate(
+    year = year(date),
+    month = month(date)
+  ) %>%
+  group_by(state, year, month) %>%
+  summarize(
+    Original = sum(Original),
+    Alpha = sum(Alpha),
+    Delta = sum(Delta),
+    Omicron = sum(Omicron),
+    .groups = 'drop'
+  ) %>%
+  pivot_longer(
+    cols = all_of(strains),
+    names_to = "strain",
+    values_to = "count"
+  ) %>%
+  group_by(state, year, month) %>%
+  slice_max(count, n = 1, with_ties = FALSE) %>%
+  ungroup()
+```
+
+```{r, include = FALSE}
+# Clean up state names in map data
+us_map <- map_data("state") %>%
+  mutate(
+    state = str_to_title(region),
+    # Create a unique identifier for each polygon piece
+    piece_id = group
+  )
+
+# Join the data with explicit relationship specification
+map_data <- us_map %>%
+  left_join(
+    dominant_strains,
+    by = "state",
+    relationship = "many-to-many"
+  )
+```
+
+```{r}
+# Create the visualization with updated aesthetics
+p <- ggplot(map_data, aes(x = long, y = lat, group = piece_id)) +
+  geom_polygon(
+    aes(fill = strain),
+    color = "white",
+    linewidth = 0.2  # Updated from 'size' to 'linewidth'
+  ) +
+  coord_map("albers", lat0 = 39, lat1 = 45) +
+  scale_fill_brewer(palette = "Set3") +
+  labs(
+    title = "COVID-19 Strain Distribution in the United States",
+    subtitle = "Date: {frame_time}",
+    fill = "Dominant Strain"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 12),
+    panel.grid = element_blank()  # Remove grid lines for cleaner map
+  ) +
+  transition_time(as.Date(paste(year, month, "01", sep = "-"))) +
+  ease_aes('linear')
+```
+
+```{r}
+p
+```
