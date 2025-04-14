@@ -3,7 +3,7 @@ title: "Assignment 1: Anscombe's Quartet"
 author: "Justice Kessie"
 date: "2025-03-24"
 categories: [news, code, analysis]
-image: "image.jpeg"
+image: "image.jpg"
 ---
 
 ```{r}
