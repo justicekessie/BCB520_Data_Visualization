@@ -1,8 +1,8 @@
 {
-  "hash": "c63e90d93e0ef92abfc3e86f7fd8ac28",
+  "hash": "2fcf8bcae97c8742f855e97284a3f799",
   "result": {
     "engine": "knitr",
-    "markdown": "---\ntitle: \"Midterm and Final Project\"\nauthor: \"Justice Kessie\"\ndate: \"2025-03-24\"\ncategories: [news, code, analysis]\nimage: \"image.jpeg\"\n---\n\n\n",
+    "markdown": "---\ntitle: \"Midterm and Final Project\"\nauthor: \"Justice Kessie\"\ndate: \"2025-03-24\"\ncategories: [news, code, analysis]\nimage: \"image.jpeg\"\nformat:\n  html:\n    code-fold: true       # Enables collapsible code blocks\n    code-tools: true      # Adds copy, toggle, and download buttons\n    code-summary: \"Show the code\"  # Optional: label for collapsed code\n---\n\n\n",
     "supporting": [],
     "filters": [
       "rmarkdown/pagebreak.lua"

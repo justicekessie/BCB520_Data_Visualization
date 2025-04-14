@@ -4,6 +4,11 @@ author: "Justice Kessie"
 date: "2025-03-24"
 categories: [news, code, analysis]
 image: "image.jpeg"
+format:
+  html:
+    code-fold: true       # Enables collapsible code blocks
+    code-tools: true      # Adds copy, toggle, and download buttons
+    code-summary: "Show the code"  # Optional: label for collapsed code
 ---
 
 
