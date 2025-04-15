@@ -1,0 +1,77 @@
+---
+title: "index"
+format: html
+---
+```{r}
+# Load libraries
+library(tidyverse)
+library(igraph)
+library(ggraph)
+library(readr)
+library(dplyr)
+```
+
+
+```{r}
+# Read the CSV
+data <- read.csv("network_data.csv")
+# Display the first few rows
+head(data)
+```
+
+```{r}
+# Remove empty or NA rows
+data <- data %>% filter(!is.na(name))
+
+# Convert data from wide to long format
+long_data <- data %>%
+  pivot_longer(-name, names_to = "interest", values_to = "value") %>%
+  filter(value == 1)  # only keep actual connections
+
+# Create igraph object
+g <- graph_from_data_frame(long_data, directed = FALSE)
+
+# Add type (bipartite: person or interest)
+V(g)$type <- V(g)$name %in% data$name  # TRUE for people, FALSE for interests
+
+# Plot with ggraph
+ggraph(g, layout = "bipartite") +
+  geom_edge_link(alpha = 0.4) +
+  geom_node_point(aes(color = type), size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3.5, max.overlaps = Inf) +
+  scale_color_manual(values = c("darkgreen", "steelblue"),
+                     labels = c("Interest", "Person")) +
+  theme_void() +
+  labs(title = "Bipartite Network of People and Interests")
+```
+```{r}
+# Make another network plot with different layout
+ggraph(g, layout = "fr") +
+  geom_edge_link(alpha = 0.4) +
+  geom_node_point(aes(color = type), size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3.5, max.overlaps = Inf) +
+  scale_color_manual(values = c("darkgreen", "steelblue"),
+                     labels = c("Interest", "Person")) +
+  theme_void() +
+  labs(title = "Bipartite Network of People and Interests (Fruchterman-Reingold Layout)")
+
+
+```
+
+```{r}
+# Make it interactive
+library(igraph)
+library(visNetwork)
+# Create a data frame for nodes
+nodes <- data.frame(id = V(g)$name, group = V(g)$type)
+# Create a data frame for edges
+edges <- data.frame(from = as.character(get.edgelist(g)[, 1]),
+                     to = as.character(get.edgelist(g)[, 2]))
+# Create the network
+visNetwork(nodes, edges) %>%
+  visEdges(arrows = "to") %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) %>%
+  visLayout(randomSeed = 123)
+```
+
+
