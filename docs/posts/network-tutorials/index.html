@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Justice Kessie">
+<meta name="dcterms.date" content="2025-03-24">
 
-<title>index – BCB520_Data_Visualization</title>
+<title>Assignment 6: Network Plots – BCB520_Data_Visualization</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -157,14 +159,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">index</h1>
-                      </div>
+      <h1 class="title">Assignment 6: Network Plots</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">news</div>
+                <div class="quarto-category">code</div>
+                <div class="quarto-category">analysis</div>
+              </div>
+                  </div>
   </div>
     
   
   <div class="quarto-title-meta">
 
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Justice Kessie </p>
+            </div>
+    </div>
       
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">March 24, 2025</p>
+      </div>
+    </div>
     
       
     </div>
@@ -270,47 +289,15 @@ The following object is masked from 'package:base':
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove empty or NA rows</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(name))</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert data from wide to long format</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>long_data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>name, <span class="at">names_to =</span> <span class="st">"interest"</span>, <span class="at">values_to =</span> <span class="st">"value"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(value <span class="sc">==</span> <span class="dv">1</span>)  <span class="co"># only keep actual connections</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Create igraph object</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">graph_from_data_frame</span>(long_data, <span class="at">directed =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Add type (bipartite: person or interest)</span></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(g)<span class="sc">$</span>type <span class="ot">&lt;-</span> <span class="fu">V</span>(g)<span class="sc">$</span>name <span class="sc">%in%</span> data<span class="sc">$</span>name  <span class="co"># TRUE for people, FALSE for interests</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot with ggraph</span></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="fu">ggraph</span>(g, <span class="at">layout =</span> <span class="st">"bipartite"</span>) <span class="sc">+</span></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_edge_link</span>(<span class="at">alpha =</span> <span class="fl">0.4</span>) <span class="sc">+</span></span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_node_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> type), <span class="at">size =</span> <span class="dv">5</span>) <span class="sc">+</span></span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_node_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> name), <span class="at">repel =</span> <span class="cn">TRUE</span>, <span class="at">size =</span> <span class="fl">3.5</span>, <span class="at">max.overlaps =</span> <span class="cn">Inf</span>) <span class="sc">+</span></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"darkgreen"</span>, <span class="st">"steelblue"</span>),</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>                     <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Interest"</span>, <span class="st">"Person"</span>)) <span class="sc">+</span></span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Bipartite Network of People and Interests"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Make another network plot with different layout</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggraph</span>(g, <span class="at">layout =</span> <span class="st">"fr"</span>) <span class="sc">+</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_edge_link</span>(<span class="at">alpha =</span> <span class="fl">0.4</span>) <span class="sc">+</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_node_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> type), <span class="at">size =</span> <span class="dv">5</span>) <span class="sc">+</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_node_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> name), <span class="at">repel =</span> <span class="cn">TRUE</span>, <span class="at">size =</span> <span class="fl">3.5</span>, <span class="at">max.overlaps =</span> <span class="cn">Inf</span>) <span class="sc">+</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"darkgreen"</span>, <span class="st">"steelblue"</span>),</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Interest"</span>, <span class="st">"Person"</span>)) <span class="sc">+</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Bipartite Network of People and Interests (Fruchterman-Reingold Layout)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Make another network plot with different layout</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggraph</span>(g, <span class="at">layout =</span> <span class="st">"fr"</span>) <span class="sc">+</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_edge_link</span>(<span class="at">alpha =</span> <span class="fl">0.4</span>) <span class="sc">+</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_node_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> type), <span class="at">size =</span> <span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_node_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> name), <span class="at">repel =</span> <span class="cn">TRUE</span>, <span class="at">size =</span> <span class="fl">3.5</span>, <span class="at">max.overlaps =</span> <span class="cn">Inf</span>) <span class="sc">+</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"darkgreen"</span>, <span class="st">"steelblue"</span>),</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Interest"</span>, <span class="st">"Person"</span>)) <span class="sc">+</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Bipartite Network of People and Interests (Fruchterman-Reingold Layout)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -320,29 +307,29 @@ The following object is masked from 'package:base':
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Make it interactive</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(igraph)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(visNetwork)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Make it interactive</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(igraph)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(visNetwork)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: package 'visNetwork' was built under R version 4.4.3</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a data frame for nodes</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>nodes <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">id =</span> <span class="fu">V</span>(g)<span class="sc">$</span>name, <span class="at">group =</span> <span class="fu">V</span>(g)<span class="sc">$</span>type)</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a data frame for edges</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>edges <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">from =</span> <span class="fu">as.character</span>(<span class="fu">get.edgelist</span>(g)[, <span class="dv">1</span>]),</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">to =</span> <span class="fu">as.character</span>(<span class="fu">get.edgelist</span>(g)[, <span class="dv">2</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a data frame for nodes</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>nodes <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">id =</span> <span class="fu">V</span>(g)<span class="sc">$</span>name, <span class="at">group =</span> <span class="fu">V</span>(g)<span class="sc">$</span>type)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a data frame for edges</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>edges <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">from =</span> <span class="fu">as.character</span>(<span class="fu">get.edgelist</span>(g)[, <span class="dv">1</span>]),</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">to =</span> <span class="fu">as.character</span>(<span class="fu">get.edgelist</span>(g)[, <span class="dv">2</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: `get.edgelist()` was deprecated in igraph 2.0.0.
 ℹ Please use `as_edgelist()` instead.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the network</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">visNetwork</span>(nodes, edges) <span class="sc">%&gt;%</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">visEdges</span>(<span class="at">arrows =</span> <span class="st">"to"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">visOptions</span>(<span class="at">highlightNearest =</span> <span class="cn">TRUE</span>, <span class="at">nodesIdSelection =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">visLayout</span>(<span class="at">randomSeed =</span> <span class="dv">123</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the network</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">visNetwork</span>(nodes, edges) <span class="sc">%&gt;%</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">visEdges</span>(<span class="at">arrows =</span> <span class="st">"to"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">visOptions</span>(<span class="at">highlightNearest =</span> <span class="cn">TRUE</span>, <span class="at">nodesIdSelection =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">visLayout</span>(<span class="at">randomSeed =</span> <span class="dv">123</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div class="visNetwork html-widget html-fill-item" id="htmlwidget-81fa03f5975e50d96ad9" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-81fa03f5975e50d96ad9">{"x":{"nodes":{"id":["Betsy","Claire ","Barrie","Henry","Ian","John","Kyle","Marwa","Priya","Justice","Sharon","microbiology","crochet","Listening.to.Music","Gardening","Genomics","Movies","Driving","Beef.Fabrication","AI","Data.Science","Lifting","Hiking","Behavioral.Ecology","Stained.Glass","Entomology","Terrariums","Architecture","Pinball","MATLAB","Mathematica","Public.Administration","Mass.Spec"],"group":[true,true,true,true,true,true,true,true,true,true,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"label":["Betsy","Claire ","Barrie","Henry","Ian","John","Kyle","Marwa","Priya","Justice","Sharon","microbiology","crochet","Listening.to.Music","Gardening","Genomics","Movies","Driving","Beef.Fabrication","AI","Data.Science","Lifting","Hiking","Behavioral.Ecology","Stained.Glass","Entomology","Terrariums","Architecture","Pinball","MATLAB","Mathematica","Public.Administration","Mass.Spec"]},"edges":{"from":["Betsy","Betsy","Betsy","Betsy","Betsy","Betsy","Betsy","Claire ","Claire ","Claire ","Claire ","Claire ","Claire ","Claire ","Claire ","Claire ","Claire ","Barrie","Barrie","Barrie","Barrie","Barrie","Barrie","Barrie","Barrie","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Ian","Ian","Ian","Ian","Ian","Ian","Ian","Ian","Ian","John","John","John","John","John","John","Kyle","Kyle","Kyle","Kyle","Kyle","Kyle","Kyle","Kyle","Kyle","Kyle","Marwa","Marwa","Marwa","Marwa","Marwa","Marwa","Marwa","Marwa","Marwa","Priya","Priya","Priya","Priya","Priya","Priya","Priya","Priya","Justice","Justice","Justice","Justice","Justice","Justice","Justice","Justice","Sharon","Sharon","Sharon","Sharon","Sharon","Sharon","Sharon","Sharon","Sharon"],"to":["microbiology","crochet","Listening.to.Music","Gardening","Genomics","Movies","Driving","microbiology","crochet","Listening.to.Music","Beef.Fabrication","Gardening","AI","Data.Science","Lifting","Movies","Hiking","Behavioral.Ecology","Listening.to.Music","Gardening","AI","Stained.Glass","Data.Science","Genomics","Movies","microbiology","Behavioral.Ecology","Listening.to.Music","Gardening","AI","Stained.Glass","Entomology","Terrariums","Architecture","Pinball","Lifting","Genomics","Movies","Hiking","Listening.to.Music","Gardening","Stained.Glass","MATLAB","Architecture","Pinball","Lifting","Mathematica","Driving","Listening.to.Music","AI","Data.Science","Pinball","Mathematica","Driving","Behavioral.Ecology","Listening.to.Music","AI","Terrariums","Data.Science","Pinball","Lifting","Movies","Driving","Hiking","Listening.to.Music","Gardening","AI","Architecture","Data.Science","Public.Administration","Lifting","Movies","Hiking","Listening.to.Music","Gardening","Entomology","Data.Science","Genomics","Movies","Driving","Hiking","Listening.to.Music","Gardening","AI","Data.Science","Movies","Mathematica","Driving","Hiking","crochet","Listening.to.Music","AI","Data.Science","Lifting","Mathematica","Driving","Mass.Spec","Hiking"]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false},"edges":{"arrows":"to"},"layout":{"randomSeed":123}},"groups":["TRUE","FALSE"],"width":null,"height":null,"idselection":{"enabled":true,"style":"width: 150px; height: 26px","useLabels":true,"main":"Select by id"},"byselection":{"enabled":false,"style":"width: 150px; height: 26px","multiple":false,"hideColor":"rgba(200,200,200,0.5)","highlight":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)","highlight":{"enabled":true,"hoverNearest":false,"degree":1,"algorithm":"all","hideColor":"rgba(200,200,200,0.5)","labelOnly":true},"collapse":{"enabled":false,"fit":false,"resetHighlight":true,"clusterOptions":null,"keepCoord":true,"labelSuffix":"(cluster)"}},"evals":[],"jsHooks":[]}</script>
+<div class="visNetwork html-widget html-fill-item" id="htmlwidget-3e0790601fa0f9dcab15" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-3e0790601fa0f9dcab15">{"x":{"nodes":{"id":["Betsy","Claire ","Barrie","Henry","Ian","John","Kyle","Marwa","Priya","Justice","Sharon","microbiology","crochet","Listening.to.Music","Gardening","Genomics","Movies","Driving","Beef.Fabrication","AI","Data.Science","Lifting","Hiking","Behavioral.Ecology","Stained.Glass","Entomology","Terrariums","Architecture","Pinball","MATLAB","Mathematica","Public.Administration","Mass.Spec"],"group":[true,true,true,true,true,true,true,true,true,true,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"label":["Betsy","Claire ","Barrie","Henry","Ian","John","Kyle","Marwa","Priya","Justice","Sharon","microbiology","crochet","Listening.to.Music","Gardening","Genomics","Movies","Driving","Beef.Fabrication","AI","Data.Science","Lifting","Hiking","Behavioral.Ecology","Stained.Glass","Entomology","Terrariums","Architecture","Pinball","MATLAB","Mathematica","Public.Administration","Mass.Spec"]},"edges":{"from":["Betsy","Betsy","Betsy","Betsy","Betsy","Betsy","Betsy","Claire ","Claire ","Claire ","Claire ","Claire ","Claire ","Claire ","Claire ","Claire ","Claire ","Barrie","Barrie","Barrie","Barrie","Barrie","Barrie","Barrie","Barrie","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Henry","Ian","Ian","Ian","Ian","Ian","Ian","Ian","Ian","Ian","John","John","John","John","John","John","Kyle","Kyle","Kyle","Kyle","Kyle","Kyle","Kyle","Kyle","Kyle","Kyle","Marwa","Marwa","Marwa","Marwa","Marwa","Marwa","Marwa","Marwa","Marwa","Priya","Priya","Priya","Priya","Priya","Priya","Priya","Priya","Justice","Justice","Justice","Justice","Justice","Justice","Justice","Justice","Sharon","Sharon","Sharon","Sharon","Sharon","Sharon","Sharon","Sharon","Sharon"],"to":["microbiology","crochet","Listening.to.Music","Gardening","Genomics","Movies","Driving","microbiology","crochet","Listening.to.Music","Beef.Fabrication","Gardening","AI","Data.Science","Lifting","Movies","Hiking","Behavioral.Ecology","Listening.to.Music","Gardening","AI","Stained.Glass","Data.Science","Genomics","Movies","microbiology","Behavioral.Ecology","Listening.to.Music","Gardening","AI","Stained.Glass","Entomology","Terrariums","Architecture","Pinball","Lifting","Genomics","Movies","Hiking","Listening.to.Music","Gardening","Stained.Glass","MATLAB","Architecture","Pinball","Lifting","Mathematica","Driving","Listening.to.Music","AI","Data.Science","Pinball","Mathematica","Driving","Behavioral.Ecology","Listening.to.Music","AI","Terrariums","Data.Science","Pinball","Lifting","Movies","Driving","Hiking","Listening.to.Music","Gardening","AI","Architecture","Data.Science","Public.Administration","Lifting","Movies","Hiking","Listening.to.Music","Gardening","Entomology","Data.Science","Genomics","Movies","Driving","Hiking","Listening.to.Music","Gardening","AI","Data.Science","Movies","Mathematica","Driving","Hiking","crochet","Listening.to.Music","AI","Data.Science","Lifting","Mathematica","Driving","Mass.Spec","Hiking"]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false},"edges":{"arrows":"to"},"layout":{"randomSeed":123}},"groups":["TRUE","FALSE"],"width":null,"height":null,"idselection":{"enabled":true,"style":"width: 150px; height: 26px","useLabels":true,"main":"Select by id"},"byselection":{"enabled":false,"style":"width: 150px; height: 26px","multiple":false,"hideColor":"rgba(200,200,200,0.5)","highlight":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)","highlight":{"enabled":true,"hoverNearest":false,"degree":1,"algorithm":"all","hideColor":"rgba(200,200,200,0.5)","labelOnly":true},"collapse":{"enabled":false,"fit":false,"resetHighlight":true,"clusterOptions":null,"keepCoord":true,"labelSuffix":"(cluster)"}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 
