@@ -1,1 +1,12 @@
 /* css styles */
+
+main.content {
+    margin-left: 3rem;
+    margin-right: 3rem;
+  }
+  
+  /* Optional: adjust margins for navbar and footer if needed */
+  .navbar, footer {
+    margin-left: 3rem;
+    margin-right: 3rem;
+  }

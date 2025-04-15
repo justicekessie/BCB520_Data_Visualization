@@ -1,8 +1,12 @@
 ---
-title: "index"
-format: html
+title: "Assignment 6: Network Plots"
+author: "Justice Kessie"
+date: "2025-03-24"
+categories: [news, code, analysis]
+image: "image.jpg"
 ---
-```{r}
+
+```{r, include=FALSE}
 # Load libraries
 library(tidyverse)
 library(igraph)
@@ -19,7 +23,7 @@ data <- read.csv("network_data.csv")
 head(data)
 ```
 
-```{r}
+```{r, include=FALSE}
 # Remove empty or NA rows
 data <- data %>% filter(!is.na(name))
 
@@ -44,7 +48,8 @@ ggraph(g, layout = "bipartite") +
   theme_void() +
   labs(title = "Bipartite Network of People and Interests")
 ```
-```{r}
+
+```{r, include=FALSE}
 # Make another network plot with different layout
 ggraph(g, layout = "fr") +
   geom_edge_link(alpha = 0.4) +

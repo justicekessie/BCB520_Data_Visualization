@@ -3,7 +3,7 @@ title: "Midterm and Final Project"
 author: "Justice Kessie"
 date: "2025-03-24"
 categories: [news, code, analysis]
-image: "image.jpeg"
+image: "image.jpg"
 format:
   html:
     code-fold: true       
@@ -25,7 +25,7 @@ library(RColorBrewer)
 library(leaflet.extras)
 library(rJava)
 library(dplyr)
-
+library(gridExtra)
 # Load the data
 lassa_data <- read.csv('lassa_virus_simulation_data.csv')
 
@@ -107,5 +107,352 @@ Given the absence of a human vaccine for LASV, current interventions focus on re
 
 Our collaborators in the University of Western Australia run the murine model of Lassa virus infection. The data from this model is used for this study. The following is the mathematical model used for this study:
 
-$$ \dfrac{dS}{dt} = 
-$$
+
+In this study, I will walk you through my parameter estimation methods and visualizations I have made.
+
+## Parameter Estimation
+The parameters of interest in this study are the basic reproduction number ($R_0$), the rate of infection ($\kappa$), the fitness cost associated with carrying a transgene ($\rho$), and the additional rate of clearance ($\alpha$). The following code conducts 100 simulation runs, each using a unique combination of parameter values randomly selected from a predefined parameter space. Synthetic data are generated for each simulation, from which observational samples are subsequently drawn.
+
+```{r, eval=FALSE}
+### Model definition
+model <- function(times, state, params) {
+  with(as.list(c(state, params)), {
+    dS <- -Kappa * Ro * S * I1 / S0 - Kappa * (1 - Rho) * Ro * S * I2 / S0
+    dI1 <- Kappa * Ro * S * I1 / S0 - Kappa * I1
+    dI2 <- Kappa * Ro * (1 - Rho) * S * I2 / S0 - (1 + Alpha) * Kappa * I2
+    list(c(dS, dI1, dI2))
+  })
+}
+
+### Simulation parameters
+set.seed(5)
+times <- seq(0, 56, by = 1)
+sigma <- 0.2     # Standard deviation for lognormal noise 
+shcc <- 1.2      # Shedding coefficient
+SimSet <- 100    # Number of simulations
+lod <- 3         # Limit of detection
+S0 <- 1e8        # Initial susceptible population
+
+# Sample sizes to test (number of animals)
+sample_sizes <- c(1, 2, 3, 4, 5, 6, 7)
+
+### Generate simulated datasets
+generate_simulation <- function(i) {
+  Ro <- runif(1, 1, 10)
+  Kappa <- runif(1, 0.15, 0.45)
+  Rho <- runif(1, 0, 0.35)
+  Alpha <- runif(1, 0, 0.35)
+  
+  I10 <- sample(1:1000, 1)
+  I20 <- sample(1:1000, 1)
+  state <- c(S = S0, I1 = I10, I2 = I20)
+  
+  out_df <- as.data.frame(ode(y = state, times = times, func = model, 
+                              parms = c(Ro = Ro, Kappa = Kappa, Rho = Rho, Alpha = Alpha, S0 = S0)))
+  
+  out_df$S[out_df$S < 0] <- 0
+  out_df$I1[out_df$I1 <= 0] <- 0
+  out_df$I2[out_df$I2 <= 0] <- 0
+  
+  out_df <- out_df %>%
+    mutate(SimSet = i, 
+           Beta = Kappa * Ro / S0, 
+           Kappa = Kappa, 
+           Rho = Rho, 
+           Ro = Ro,
+           Alpha = Alpha,
+           I1_trans = log10(I1 * shcc), 
+           I2_trans = log10(I2 * shcc))
+  return(out_df)
+}
+
+# Run simulations
+sim_data <- lapply(1:SimSet, generate_simulation)
+SimData <- bind_rows(sim_data)
+# Save the simulated data
+#saveRDS(SimData, file = "C:/Users/jakes/Downloads/ProjectR/Data/Sim_Data.rds")
+
+# Generate focal datasets with raw observations
+create_focal_datasets <- function(df, sample_sizes) {
+  focal_base <- df %>% filter(time %% 4 == 0)
+  focal_datasets <- list()
+  
+  for (n in sample_sizes) {
+    focal <- focal_base
+    
+    for (j in 1:n) {
+      focal[[paste0("I1_sample_", j)]] <- rnorm(nrow(focal), mean = focal$I1_trans, sd = sigma)
+      focal[[paste0("I2_sample_", j)]] <- rnorm(nrow(focal), mean = focal$I2_trans, sd = sigma)
+    }
+    
+    focal$sample_size <- n
+    focal_datasets[[as.character(n)]] <- focal
+  }
+  
+  return(focal_datasets)
+}
+
+# Apply to all simulations
+Focal_by_sample <- list()
+for (i in 1:SimSet) {
+  Focal_by_sample[[i]] <- create_focal_datasets(sim_data[[i]], sample_sizes)
+}
+
+## Save focal datasets
+#saveRDS(Focal_by_sample, file = "C:/Users/jakes/Downloads/ProjectR/Data/Focal_by_sample.rds")
+```
+
+We use maximum likelihood estimation (MLE) to estimate the parameters of interest. The MLE essentially measures the likelihood of observing the data given a set of parameters. The goal is to find the parameter values that maximize this likelihood function. In this case, we are interested in estimating the parameters $R_0$, $\kappa$, $\rho$, and $\alpha$ based on the simulated data. We used the `optimx` function to perform the optimization. The `optimx` function is a wrapper around several optimization algorithms, allowing for more flexibility and options compared to the base R `optim` function. We used the `nlminb` method, which is suitable for bounded optimization problems.
+
+```{r, eval=FALSE}
+### Likelihood function (no averaging, constant sigma)
+likelihood_func <- function(parms, sim_index, sample_size) {
+  Ro <- parms[1]
+  Kappa <- parms[2]
+  Rho <- parms[3]
+  Alpha <- parms[4]
+  
+  ThisSim <- Focal_by_sample[[sim_index]][[as.character(sample_size)]]
+  state <- c(S = ThisSim$S[[1]], I1 = ThisSim$I1[[1]], I2 = ThisSim$I2[[1]])
+  
+  out <- ode(y = state, times = ThisSim$time, func = model, 
+             parms = c(Ro = Ro, Kappa = Kappa, Rho = Rho, Alpha = Alpha, S0 = S0))
+  sim_df <- as.data.frame(out)
+  sim_df$I1_trans <- log10(sim_df$I1 * shcc)
+  sim_df$I2_trans <- log10(sim_df$I2 * shcc)
+  
+  total_loglik <- 0
+  
+  for (j in 1:sample_size) {
+    I1_obs <- ThisSim[[paste0("I1_sample_", j)]]
+    I2_obs <- ThisSim[[paste0("I2_sample_", j)]]
+    
+    ll_I1 <- ifelse(I1_obs < lod,
+                    pnorm(lod, sim_df$I1_trans, sd = sigma, log.p = TRUE),
+                    dnorm(I1_obs, sim_df$I1_trans, sd = sigma, log = TRUE))
+    
+    ll_I2 <- ifelse(I2_obs < lod,
+                    pnorm(lod, sim_df$I2_trans, sd = sigma, log.p = TRUE),
+                    dnorm(I2_obs, sim_df$I2_trans, sd = sigma, log = TRUE))
+    
+    total_loglik <- total_loglik + sum(ll_I1) + sum(ll_I2)
+  }
+  
+  return(-total_loglik)
+}
+
+
+### Run parameter estimation for all simulations and sample sizes
+# Initialize results dataframe
+Results <-NULL
+Results <- data.frame(
+  WhichSim = integer(),
+  SampleSize = integer(),
+  True_Ro = numeric(),
+  True_Kappa = numeric(),
+  True_Rho = numeric(),
+  True_Alpha = numeric(),
+  Est_Ro = numeric(),
+  Est_Kappa = numeric(),
+  Est_Rho = numeric(),
+  Est_Alpha = numeric(),
+  NLL = numeric()
+)
+
+## Save Results as rds
+#saveRDS(Results, file = "Results1.rds")
+
+
+# Parameter estimation function
+estimate_parameters <- function(i, n_samples) {
+  ThisSim <- Focal_by_sample[[i]][[as.character(n_samples)]]
+  
+  wrapped_likelihood <- function(parms) {
+    likelihood_func(parms, i, n_samples)
+  }
+  
+  # Optimize
+  opt_result <- optimx(par = c(7, 0.3, 0.1, 0.05), fn = wrapped_likelihood, 
+                       lower = c(1, 0, -1, -1 ), upper = c(16, 1, 1, 1), 
+                       method = "nlminb", hessian = TRUE)
+  data.frame(p1 = NA, p2 = NA, p3 = NA, p4 = NA, value = NA)
+  
+  # Return results
+  data.frame(
+    WhichSim = i,
+    SampleSize = n_samples,
+    True_Ro = ThisSim$Ro[1],
+    True_Kappa = ThisSim$Kappa[1],
+    True_Rho = ThisSim$Rho[1],
+    True_Alpha = ThisSim$Alpha[1],
+    Est_Ro = opt_result$p1,
+    Est_Kappa = opt_result$p2,
+    Est_Rho = opt_result$p3,
+    Est_Alpha = opt_result$p4,
+    NLL = opt_result$value
+  )
+}
+
+# For demonstration, run on a subset of simulations (e.g., first 20)
+
+num_sims_to_run <- 100
+
+for (i in 1:num_sims_to_run) {
+  for (n in sample_sizes) {
+    result <- estimate_parameters(i, n)
+    Results <- rbind(Results, result)
+    cat(sprintf("Completed simulation %d with sample size %d\n", i, n))
+  }
+}
+
+## Save Results as rds
+#saveRDS(Results, file = "C:/Users/jakes/Downloads/ProjectR/Data/Results.rds")
+
+```
+
+```{r}
+# Load the results
+Results <- readRDS("Results.rds")
+```
+
+See the results of the parameter estimation below. The results are saved in a data frame called `Results`. The columns include the simulation set number, sample size, true and estimated values of the parameters, and the negative log-likelihood (NLL) value.
+
+```{r}
+head(Results)
+```
+
+Let's make our next visualization. A plot of the estimated parameters against the true parameters. The points are colored by sample size. The dashed line represents a 1:1 relationship, indicating perfect estimation.
+
+```{r}
+plot_comparison <- function(results_df, sample_sizes) {
+  results_df$SampleSize <- factor(results_df$SampleSize)
+  
+  # Create plot for Ro
+  p1 <- ggplot(data = results_df, aes(x = True_Ro, y = Est_Ro, color = SampleSize)) +
+    geom_point(alpha = 0.7, size = 3) +
+    geom_abline(slope = 1, intercept = 0, color = "black", linetype = "dashed") +
+    geom_smooth(method = "lm", se = FALSE, color = "orange", linetype = "solid") +    # Best fit line
+    scale_color_brewer(palette = "Blues", direction = 1) +
+    labs(x = "True R_0", y = "Estimated R_0", title = "R_0 Parameter") +
+    theme_minimal() +
+    coord_cartesian(
+      xlim = c(min(results_df$True_Ro, na.rm = TRUE) * 0.99, 
+               max(results_df$True_Ro, na.rm = TRUE) * 1.01),
+      ylim = c(min(results_df$Est_Ro, na.rm = TRUE) * 0.99, 
+               max(results_df$Est_Ro, na.rm = TRUE) * 1.01)
+    ) +
+    theme(plot.title = element_text(hjust = 0.5),
+          legend.position = "none")
+  
+  # Create plot for Kappa
+  p2 <- ggplot(data = results_df, aes(x = True_Kappa, y = Est_Kappa, color = SampleSize)) +
+    geom_point(alpha = 0.7, size = 3) +
+    geom_abline(slope = 1, intercept = 0, color = "black", linetype = "dashed") +
+    geom_smooth(method = "lm", se = FALSE, color = "orange", linetype = "solid") +    # Best fit line
+    scale_color_brewer(palette = "Blues", direction = 1) +
+    labs(x = "True κ", y = "Estimated κ", title = "κ Parameter") +
+    theme_minimal() +
+    coord_cartesian(
+      xlim = c(min(results_df$True_Kappa, na.rm = TRUE) * 0.99, 
+               max(results_df$True_Kappa, na.rm = TRUE) * 1.01),
+      ylim = c(min(results_df$Est_Kappa, na.rm = TRUE) * 0.99, 
+               max(results_df$Est_Kappa, na.rm = TRUE) * 1.01)
+    ) +
+    theme(plot.title = element_text(hjust = 0.5),
+          legend.position = "none")
+  
+  # Create plot for Rho
+  p3 <- ggplot(data = results_df, aes(x = True_Rho, y = Est_Rho, color = SampleSize)) +
+    geom_point(alpha = 0.7, size = 3) +
+    geom_abline(slope = 1, intercept = 0, color = "black", linetype = "dashed") +
+    geom_smooth(method = "lm", se = FALSE, color = "orange", linetype = "solid") +    # Best fit line
+    scale_color_brewer(palette = "Blues", direction = 1) +
+    labs(x = "True ρ", y = "Estimated ρ", title = "ρ Parameter") +
+    theme_minimal() +
+    coord_cartesian(
+      xlim = c(min(results_df$True_Rho, na.rm = TRUE) * 0.99, 
+               max(results_df$True_Rho, na.rm = TRUE) * 1.01),
+      ylim = c(min(results_df$Est_Rho, na.rm = TRUE) * 0.99, 
+               max(results_df$Est_Rho, na.rm = TRUE) * 1.01)
+    ) +
+    theme(plot.title = element_text(hjust = 0.5),
+          legend.position = "none")
+  
+  # Create plot for Alpha
+  p4 <- ggplot(data = results_df, aes(x = True_Alpha, y = Est_Alpha, color = SampleSize)) +
+    geom_point(alpha = 0.7, size = 3) +
+    geom_abline(slope = 1, intercept = 0, color = "black", linetype = "dashed") +
+    geom_smooth(method = "lm", se = FALSE, color = "orange", linetype = "solid") +    # Best fit line
+    scale_color_brewer(palette = "Blues", direction = 1) +
+    labs(x = "True α", y = "Estimated α", title = "α Parameter") +
+    theme_minimal() +
+    coord_cartesian(
+      xlim = c(min(results_df$True_Alpha, na.rm = TRUE) * 0.99, 
+               max(results_df$True_Alpha, na.rm = TRUE) * 1.01),
+      ylim = c(min(results_df$Est_Alpha, na.rm = TRUE) * 0.99, 
+               max(results_df$Est_Alpha, na.rm = TRUE) * 1.01)
+    ) +
+    theme(plot.title = element_text(hjust = 0.5))
+  
+  # Arrange plots with a shared legend
+  combined_plot <- grid.arrange(p1, p2, p3, p4, nrow = 1,
+                                top = "True vs. Estimated Parameters by Sample Size",
+                                widths = c(1, 1, 1, 1))
+  
+  # Create faceted plots by sample size to show improvement
+  facet_plots <- list()
+  
+  for (param in c("Ro", "Kappa", "Rho", "Alpha")) {
+    # Column names for true and estimated values
+    true_col <- paste0("True_", param)
+    est_col <- paste0("Est_", param)
+    
+    # Set title label with proper formatting
+    if (param == "Ro") {
+      title_label <- "R_0"
+    } else if (param == "Kappa") {
+      title_label <- "κ"
+    } else if (param == "Rho") {
+      title_label <- "ρ"
+    } else {
+      title_label <- "α"
+    }
+    
+    # Create plot
+    p <- ggplot(data = results_df, aes_string(x = true_col, y = est_col)) +
+      geom_point(alpha = 0.7) +
+      geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed", linewidth = 1.0) +
+      geom_smooth(method = "lm", se = FALSE, color = "orange", linetype = "solid") +    # Best fit line
+      facet_wrap(~ SampleSize, nrow = 2, ncol = 4,
+                 labeller = labeller(SampleSize = function(x) paste("Animals:", x))) +
+      labs(x = paste("True", title_label),
+           y = paste("Estimated", title_label),
+           title = paste(title_label, "Parameter Estimation by Sample Size")) +
+      theme_minimal() +
+      coord_cartesian(
+        xlim = c(min(results_df[[est_col]], na.rm = TRUE) * 0.99, 
+                 max(results_df[[est_col]], na.rm = TRUE) * 1.01),
+        ylim = c(min(results_df[[est_col]], na.rm = TRUE) * 0.99, 
+                 max(results_df[[est_col]], na.rm = TRUE) * 1.01)
+      ) +
+      theme(plot.title = element_text(hjust = 0.5))
+    
+    facet_plots[[param]] <- p
+  }
+  
+  # Return both plot types
+  return(list(combined = combined_plot,
+              faceted = facet_plots))
+}
+
+parameter_plots <- plot_comparison(Results, sample_sizes)
+
+# Display the combined plot
+print(parameter_plots$combined)
+
+# Display faceted plots for each parameter
+print(parameter_plots$faceted$Ro)
+print(parameter_plots$faceted$Kappa)
+print(parameter_plots$faceted$Rho)
+print(parameter_plots$faceted$Alpha)
+```
