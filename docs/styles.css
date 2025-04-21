@@ -1,12 +1,14 @@
-/* css styles */
+/* styles.css */
 
-main.content {
-    margin-left: 3rem;
-    margin-right: 3rem;
-  }
-  
-  /* Optional: adjust margins for navbar and footer if needed */
-  .navbar, footer {
-    margin-left: 3rem;
-    margin-right: 3rem;
-  }
+/* Add margin around page content */
+.main-container {
+  max-width: 1200px;  /* Adjust to your liking */
+  margin-left: auto;
+  margin-right: auto;
+  padding: 2rem;      /* Adds space inside */
+}
+
+/* Optional: Add space between sections */
+section {
+  margin-bottom: 2rem;
+}

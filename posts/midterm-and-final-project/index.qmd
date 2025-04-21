@@ -12,6 +12,8 @@ format:
 ---
 
 ```{r, include=FALSE}
+#| warning: false
+#| message: false
 # Load required libraries
 library(tidyverse)
 library(lubridate)
@@ -26,6 +28,12 @@ library(leaflet.extras)
 library(rJava)
 library(dplyr)
 library(gridExtra)
+library(patchwork)
+library(deSolve)
+library(dplyr)
+library(reshape2)
+library(tidyverse)
+
 # Load the data
 lassa_data <- read.csv('lassa_virus_simulation_data.csv')
 
@@ -40,7 +48,11 @@ Lassa virus (LASV) is endemic to West Africa, where it is responsible for causin
 
 1.  <div>
 
-    ```{r}
+    </div>
+
+```{r}
+#| warning: false
+#| message: false
     # Prepare data for map
     map_data <- lassa_data %>%
       group_by(country, city, lat, long) %>%
@@ -95,9 +107,11 @@ Lassa virus (LASV) is endemic to West Africa, where it is responsible for causin
 
     # Display the map
     lassa_map
-    ```
+```
 
-    </div>
+```         
+</div>
+```
 
 Given the absence of a human vaccine for LASV, current interventions focus on reducing contact between humans and infected animals, either through behavioral changes or through the mass culling of the rodent reservoir. An alternative and promising approach involves the use of transmissible vaccines to rapidly establish immunity within wild animal reservoir populations, thereby reducing the prevalence of the virus. The key advantage of transmissible vaccines lies in their potential to limit the occurrence of spillover events from rodent reservoirs to human populations while conserving ecological biodiversity. The proposed research seeks to address the urgent need for effective control strategies against LASV in West Africa by evaluating the potential impact of a transmissible vaccine. A prototype transmissible vaccine for LASV has been developed, and the next crucial step involves predicting its efficacy in reducing viral spillover into human populations, particularly in regions such as Western Nigeria and Ghana, where the virus is expanding its range. This objective will be accomplished through the pursuit of the following aims:
 
@@ -107,13 +121,56 @@ Given the absence of a human vaccine for LASV, current interventions focus on re
 
 Our collaborators in the University of Western Australia run the murine model of Lassa virus infection. The data from this model is used for this study. The following is the mathematical model used for this study:
 
-
 In this study, I will walk you through my parameter estimation methods and visualizations I have made.
 
+```{r}
+#| fig.caption: "Network diagram of the model: Describes the viral kinetics within a host"
+library(visNetwork)
+
+# Define nodes
+nodes <- data.frame(
+  id = c("S", "I1", "I2"),
+  label = c("Target cells (S)", "Viral Vector (I1)", "Vaccine Vector (I2)"),
+  color = c("lightblue", "salmon", "lightgreen"),
+  shape = "ellipse"
+)
+
+# Define edges (just structural)
+edges <- data.frame(
+  from = c("S", "S", "I1", "I2"),
+  to   = c("I1", "I2", NA, NA),
+  label = c("β * S * I1", "β * (1 - ρ) * S * I2", "−κ * I1", "−(1 + α) * κ * I2"),
+  arrows = "to",
+  stringsAsFactors = FALSE
+) |> 
+  na.omit()  # Remove edges with NA targets (or change to 'Removed' node if needed)
+
+# Optional: add "Removed" node
+nodes <- rbind(nodes, data.frame(
+  id = "R", label = "Clearance", color = "gray", shape = "ellipse"
+))
+edges <- rbind(edges, data.frame(
+  from = c("I1", "I2"),
+  to = c("R", "R"),
+  label = c("−κ * I1", "−(1 + α) * κ * I2"),
+  arrows = "to"
+))
+
+# Plot network
+visNetwork(nodes, edges, width = "100%", height = "400px") %>%
+  visEdges(smooth = FALSE) %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) %>%
+  visLayout(randomSeed = 42)
+
+```
+
 ## Parameter Estimation
+
 The parameters of interest in this study are the basic reproduction number ($R_0$), the rate of infection ($\kappa$), the fitness cost associated with carrying a transgene ($\rho$), and the additional rate of clearance ($\alpha$). The following code conducts 100 simulation runs, each using a unique combination of parameter values randomly selected from a predefined parameter space. Synthetic data are generated for each simulation, from which observational samples are subsequently drawn.
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
+#| warning: false
+#| message: false
 ### Model definition
 model <- function(times, state, params) {
   with(as.list(c(state, params)), {
@@ -171,6 +228,8 @@ sim_data <- lapply(1:SimSet, generate_simulation)
 SimData <- bind_rows(sim_data)
 # Save the simulated data
 #saveRDS(SimData, file = "C:/Users/jakes/Downloads/ProjectR/Data/Sim_Data.rds")
+# Load the simulated data
+SimData <- readRDS("C:/Users/jakes/Downloads/ProjectR/Data/Sim_Data.rds")
 
 # Generate focal datasets with raw observations
 create_focal_datasets <- function(df, sample_sizes) {
@@ -200,11 +259,20 @@ for (i in 1:SimSet) {
 
 ## Save focal datasets
 #saveRDS(Focal_by_sample, file = "C:/Users/jakes/Downloads/ProjectR/Data/Focal_by_sample.rds")
+# Load focal datasets
+```
+
+```{r, include=FALSE}
+SimData <- readRDS("C:/Users/jakes/Downloads/ProjectR/Data/Sim_Data.rds")
+Focal_by_sample <- readRDS("C:/Users/jakes/Downloads/ProjectR/Data/Focal_by_sample.rds")
 ```
 
 We use maximum likelihood estimation (MLE) to estimate the parameters of interest. The MLE essentially measures the likelihood of observing the data given a set of parameters. The goal is to find the parameter values that maximize this likelihood function. In this case, we are interested in estimating the parameters $R_0$, $\kappa$, $\rho$, and $\alpha$ based on the simulated data. We used the `optimx` function to perform the optimization. The `optimx` function is a wrapper around several optimization algorithms, allowing for more flexibility and options compared to the base R `optim` function. We used the `nlminb` method, which is suitable for bounded optimization problems.
 
 ```{r, eval=FALSE}
+#| warning: false
+#| message: false
+
 ### Likelihood function (no averaging, constant sigma)
 likelihood_func <- function(parms, sim_index, sample_size) {
   Ro <- parms[1]
@@ -318,141 +386,278 @@ Results <- readRDS("Results.rds")
 See the results of the parameter estimation below. The results are saved in a data frame called `Results`. The columns include the simulation set number, sample size, true and estimated values of the parameters, and the negative log-likelihood (NLL) value.
 
 ```{r}
-head(Results)
+#| label: results-table
+#| echo: false
+#| warning: false
+#| message: false
+
+library(DT)
+
+datatable(
+  head(Results),
+  options = list(scrollX = TRUE),  # Enables horizontal scroll
+  class = "display nowrap stripe", # Prevents wrapping
+  rownames = FALSE
+)
 ```
 
 Let's make our next visualization. A plot of the estimated parameters against the true parameters. The points are colored by sample size. The dashed line represents a 1:1 relationship, indicating perfect estimation.
 
-```{r}
-plot_comparison <- function(results_df, sample_sizes) {
+### Tabset
+
+```{r, fig.width=12, fig.height=10}
+#| warning: false
+#| message: false
+#| fig.label: "parameter-estimation"
+#| fig.caption: "Parameter estimation results: This plot shows the estimated parameters against the true parameters. The points are colored by sample size. The dashed line represents a 1:1 relationship, indicating perfect estimation."
+library(ggplot2)
+library(patchwork) # for combining plots
+
+Results$SampleSize <- factor(Results$SampleSize)
+
+# R0 Plot
+p1 <- ggplot(Results, aes(x = True_Ro, y = Est_Ro, color = SampleSize)) +
+  geom_point(alpha = 0.7, size = 3) +
+  geom_abline(slope = 1, intercept = 0, color = "black", linetype = "dashed") +
+  geom_smooth(method = "lm", se = FALSE, color = "orange") +
+  scale_color_brewer(palette = "Blues") +
+  labs(x = "True R_0", y = "Estimated R_0", title = "R_0 Parameter") +
+  theme_minimal()
+
+# Kappa Plot
+p2 <- ggplot(Results, aes(x = True_Kappa, y = Est_Kappa, color = SampleSize)) +
+  geom_point(alpha = 0.7, size = 3) +
+  geom_abline(slope = 1, intercept = 0, color = "black", linetype = "dashed") +
+  geom_smooth(method = "lm", se = FALSE, color = "orange") +
+  scale_color_brewer(palette = "Blues") +
+  labs(x = "True κ", y = "Estimated κ", title = "κ Parameter") +
+  theme_minimal()
+
+# Rho Plot
+p3 <- ggplot(Results, aes(x = True_Rho, y = Est_Rho, color = SampleSize)) +
+  geom_point(alpha = 0.7, size = 3) +
+  geom_abline(slope = 1, intercept = 0, color = "black", linetype = "dashed") +
+  geom_smooth(method = "lm", se = FALSE, color = "orange") +
+  scale_color_brewer(palette = "Blues") +
+  labs(x = "True ρ", y = "Estimated ρ", title = "ρ Parameter") +
+  theme_minimal()
+
+# Alpha Plot
+p4 <- ggplot(Results, aes(x = True_Alpha, y = Est_Alpha, color = SampleSize)) +
+  geom_point(alpha = 0.7, size = 3) +
+  geom_abline(slope = 1, intercept = 0, color = "black", linetype = "dashed") +
+  geom_smooth(method = "lm", se = FALSE, color = "orange") +
+  scale_color_brewer(palette = "Blues") +
+  labs(x = "True α", y = "Estimated α", title = "α Parameter") +
+  theme_minimal()
+
+# Combine plots (2x2 layout)
+(p1 | p2) / (p3 | p4)
+```
+
+The plots above show the estimated parameters against the true parameters. The points are colored by sample size. The dashed line represents a 1:1 relationship, indicating perfect estimation. There is a clear trend in the estimates, with larger sample sizes generally leading to better estimates. The orange line represents the linear regression fit to the data, which can help visualize the relationship between true and estimated values.
+
+Meanwhile, there is also a clear deviation from the 1:1 line, indicating that the estimates are not perfect. This is expected in real-world scenarios, where various factors can influence the accuracy of parameter estimation. We make a plot of true versus errors to visualize the errors in estimation. The errors are calculated as the difference between the estimated and true values of the parameters, divided by. The points are colored by sample size, and the dashed line represents a 0 error line.
+
+```{r, fig.width=12, fig.height=10}
+#| fig.label: "parameter-estimation-errors"
+#| fig.caption: "Parameter estimation errors: This plot shows the errors in estimation. The errors are calculated as the difference between the estimated and true values of the parameters, divided by the true values. The points are colored by sample size, and the dashed line represents a 0 error line."
+#| warning: false
+#| message: false
+Results <- Results %>%
+  mutate(
+    Error_Ro = (Est_Ro - True_Ro) / True_Ro,
+    Error_Kappa = (Est_Kappa - True_Kappa) / True_Kappa,
+    Error_Rho = (Est_Rho - True_Rho) / True_Rho,
+    Error_Alpha = (Est_Alpha - True_Alpha) / True_Alpha
+  )
+
+plot_errors <- function(results_df, sample_sizes, error_threshold = 0.1) {
   results_df$SampleSize <- factor(results_df$SampleSize)
   
-  # Create plot for Ro
-  p1 <- ggplot(data = results_df, aes(x = True_Ro, y = Est_Ro, color = SampleSize)) +
-    geom_point(alpha = 0.7, size = 3) +
-    geom_abline(slope = 1, intercept = 0, color = "black", linetype = "dashed") +
-    geom_smooth(method = "lm", se = FALSE, color = "orange", linetype = "solid") +    # Best fit line
-    scale_color_brewer(palette = "Blues", direction = 1) +
-    labs(x = "True R_0", y = "Estimated R_0", title = "R_0 Parameter") +
-    theme_minimal() +
-    coord_cartesian(
-      xlim = c(min(results_df$True_Ro, na.rm = TRUE) * 0.99, 
-               max(results_df$True_Ro, na.rm = TRUE) * 1.01),
-      ylim = c(min(results_df$Est_Ro, na.rm = TRUE) * 0.99, 
-               max(results_df$Est_Ro, na.rm = TRUE) * 1.01)
-    ) +
-    theme(plot.title = element_text(hjust = 0.5),
-          legend.position = "none")
+  # Create a list to store plots
+  plot_list <- list()
   
-  # Create plot for Kappa
-  p2 <- ggplot(data = results_df, aes(x = True_Kappa, y = Est_Kappa, color = SampleSize)) +
-    geom_point(alpha = 0.7, size = 3) +
-    geom_abline(slope = 1, intercept = 0, color = "black", linetype = "dashed") +
-    geom_smooth(method = "lm", se = FALSE, color = "orange", linetype = "solid") +    # Best fit line
-    scale_color_brewer(palette = "Blues", direction = 1) +
-    labs(x = "True κ", y = "Estimated κ", title = "κ Parameter") +
-    theme_minimal() +
-    coord_cartesian(
-      xlim = c(min(results_df$True_Kappa, na.rm = TRUE) * 0.99, 
-               max(results_df$True_Kappa, na.rm = TRUE) * 1.01),
-      ylim = c(min(results_df$Est_Kappa, na.rm = TRUE) * 0.99, 
-               max(results_df$Est_Kappa, na.rm = TRUE) * 1.01)
-    ) +
-    theme(plot.title = element_text(hjust = 0.5),
-          legend.position = "none")
-  
-  # Create plot for Rho
-  p3 <- ggplot(data = results_df, aes(x = True_Rho, y = Est_Rho, color = SampleSize)) +
-    geom_point(alpha = 0.7, size = 3) +
-    geom_abline(slope = 1, intercept = 0, color = "black", linetype = "dashed") +
-    geom_smooth(method = "lm", se = FALSE, color = "orange", linetype = "solid") +    # Best fit line
-    scale_color_brewer(palette = "Blues", direction = 1) +
-    labs(x = "True ρ", y = "Estimated ρ", title = "ρ Parameter") +
-    theme_minimal() +
-    coord_cartesian(
-      xlim = c(min(results_df$True_Rho, na.rm = TRUE) * 0.99, 
-               max(results_df$True_Rho, na.rm = TRUE) * 1.01),
-      ylim = c(min(results_df$Est_Rho, na.rm = TRUE) * 0.99, 
-               max(results_df$Est_Rho, na.rm = TRUE) * 1.01)
-    ) +
-    theme(plot.title = element_text(hjust = 0.5),
-          legend.position = "none")
-  
-  # Create plot for Alpha
-  p4 <- ggplot(data = results_df, aes(x = True_Alpha, y = Est_Alpha, color = SampleSize)) +
-    geom_point(alpha = 0.7, size = 3) +
-    geom_abline(slope = 1, intercept = 0, color = "black", linetype = "dashed") +
-    geom_smooth(method = "lm", se = FALSE, color = "orange", linetype = "solid") +    # Best fit line
-    scale_color_brewer(palette = "Blues", direction = 1) +
-    labs(x = "True α", y = "Estimated α", title = "α Parameter") +
-    theme_minimal() +
-    coord_cartesian(
-      xlim = c(min(results_df$True_Alpha, na.rm = TRUE) * 0.99, 
-               max(results_df$True_Alpha, na.rm = TRUE) * 1.01),
-      ylim = c(min(results_df$Est_Alpha, na.rm = TRUE) * 0.99, 
-               max(results_df$Est_Alpha, na.rm = TRUE) * 1.01)
-    ) +
-    theme(plot.title = element_text(hjust = 0.5))
-  
-  # Arrange plots with a shared legend
-  combined_plot <- grid.arrange(p1, p2, p3, p4, nrow = 1,
-                                top = "True vs. Estimated Parameters by Sample Size",
-                                widths = c(1, 1, 1, 1))
-  
-  # Create faceted plots by sample size to show improvement
-  facet_plots <- list()
-  
-  for (param in c("Ro", "Kappa", "Rho", "Alpha")) {
-    # Column names for true and estimated values
-    true_col <- paste0("True_", param)
-    est_col <- paste0("Est_", param)
-    
+  for (param in c("R0", "Kappa", "Rho", "Alpha")) {
     # Set title label with proper formatting
-    if (param == "Ro") {
-      title_label <- "R_0"
+    if (param == "R0") {
+      true_col <- "True_Ro"
+      est_col <- "Est_Ro"
+      error_col <- "Error_Ro"
+      title_label <- expression(R[0])
     } else if (param == "Kappa") {
-      title_label <- "κ"
+      true_col <- "True_Kappa"
+      est_col <- "Est_Kappa"
+      error_col <- "Error_Kappa"
+      title_label <- expression(Kappa)
     } else if (param == "Rho") {
-      title_label <- "ρ"
+      true_col <- "True_Rho"
+      est_col <- "Est_Rho"
+      error_col <- "Error_Rho"
+      title_label <- expression(Rho)
     } else {
-      title_label <- "α"
+      true_col <- "True_Alpha"
+      est_col <- "Est_Alpha"
+      error_col <- "Error_Alpha"
+      title_label <- expression(Alpha)
     }
     
+    
     # Create plot
-    p <- ggplot(data = results_df, aes_string(x = true_col, y = est_col)) +
-      geom_point(alpha = 0.7) +
-      geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed", linewidth = 1.0) +
-      geom_smooth(method = "lm", se = FALSE, color = "orange", linetype = "solid") +    # Best fit line
+    p <- ggplot(data = results_df, aes_string(x = true_col, y = error_col)) +
+      geom_point(aes(color = as.factor(SampleSize)), alpha = 0.7) +
+      #geom_smooth(method = "lm", se = FALSE, color = "orange", linetype = "solid") +    # Best fit line
       facet_wrap(~ SampleSize, nrow = 2, ncol = 4,
                  labeller = labeller(SampleSize = function(x) paste("Animals:", x))) +
       labs(x = paste("True", title_label),
-           y = paste("Estimated", title_label),
-           title = paste(title_label, "Parameter Estimation by Sample Size")) +
+           y = paste("Error in Estimated", title_label),
+           title = paste(title_label, "Parameter Error by Sample Size")) +
       theme_minimal() +
       coord_cartesian(
-        xlim = c(min(results_df[[est_col]], na.rm = TRUE) * 0.99, 
-                 max(results_df[[est_col]], na.rm = TRUE) * 1.01),
-        ylim = c(min(results_df[[est_col]], na.rm = TRUE) * 0.99, 
-                 max(results_df[[est_col]], na.rm = TRUE) * 1.01)
+        xlim = c(min(results_df[[true_col]], na.rm = TRUE) * 0.99, 
+                 max(results_df[[true_col]], na.rm = TRUE) * 1.01),
+        ylim = c(0, error_threshold * 1.01)
       ) +
       theme(plot.title = element_text(hjust = 0.5))
     
-    facet_plots[[param]] <- p
+    plot_list[[param]] <- p
   }
   
-  # Return both plot types
-  return(list(combined = combined_plot,
-              faceted = facet_plots))
+  return(plot_list)
+}
+plot_list <- plot_errors(Results, Results$SampleSize, error_threshold = 0.1)
+
+plot_list$R0
+
+plot_list$Kappa
+
+plot_list$Rho
+
+plot_list$Alpha
+```
+
+
+The plots above show the errors in estimation for each parameter. The errors are calculated as the difference between the estimated and true values of the parameters, divided by the true values. The points are colored by sample size, and the dashed line represents a 0 error line. There is a clear trend in the errors, with larger sample sizes generally leading to smaller errors. The orange line represents the linear regression fit to the data, which can help visualize the relationship between true and estimated values.
+
+
+## Model Fits
+```{r, fig.width=15, fig.height=10}
+#| warning: false
+#| message: false
+library(deSolve)
+plot_model_fit <- function(sim_index = 1, sample_sizes = c(1, 2, 3, 4, 5, 6, 7)) {
+  plots <- list()
+  
+  # Create a common legend data
+  legend_data <- data.frame(
+    time = rep(0, 4),
+    Value = rep(0, 4),
+    Label = rep(c("Viral Vector (CMV)", "Vaccine Vector (CMV + LASV/fNP)"), each = 2),
+    LineType = rep(c("True", "Estimated"), 2)
+  )
+  
+  # Create an empty plot with only the legend
+  legend_plot <- ggplot(legend_data, aes(x = time, y = Value, color = Label, linetype = LineType)) +
+    geom_line() +
+    scale_color_manual(values = c("Viral Vector (CMV)" = "blue", 
+                                  "Vaccine Vector (CMV + LASV/fNP)" = "red")) +
+    scale_linetype_manual(values = c("True" = "dashed", "Estimated" = "solid")) +
+    guides(color = guide_legend(title = "Group"),
+           linetype = guide_legend(title = "Trajectory")) +
+    theme_void()
+  
+  # Extract the legend
+  legend <- get_legend(legend_plot)
+  
+  for (n in sample_sizes) {
+    ThisSim <- Focal_by_sample[[sim_index]][[as.character(n)]]
+    
+    # Generate model predictions with estimated parameters
+    state <- c(S = ThisSim$S[[1]], I1 = ThisSim$I1[[1]], I2 = ThisSim$I2[[1]])
+    out <- ode(y = state, times = times, func = model,
+               parms = c(Ro = Results[Results$WhichSim == sim_index & Results$SampleSize == n, "Est_Ro"][1], 
+                         Kappa = Results[Results$WhichSim == sim_index & Results$SampleSize == n, "Est_Kappa"][1], 
+                         Rho = Results[Results$WhichSim == sim_index & Results$SampleSize == n, "Est_Rho"][1],
+                         Alpha = Results[Results$WhichSim == sim_index & Results$SampleSize == n, "Est_Alpha"][1],
+                         S0 = 1e8))
+    
+    pred_df <- as.data.frame(out)
+    pred_df$I1_trans <- log10(pred_df$I1 * shcc)
+    pred_df$I2_trans <- log10(pred_df$I2 * shcc)
+    
+    # Long-format data for true and estimated trajectories
+    true_df <- melt(sim_data[[sim_index]][, c("time", "I1_trans", "I2_trans")], id.vars = "time") %>%
+      rename(Type = variable, Value = value) %>%
+      mutate(LineType = "True",
+             Label = ifelse(Type == "I1_trans", "Viral Vector (CMV)", "Vaccine Vector (CMV + LASV/fNP)"))
+    
+    pred_long <- melt(pred_df[, c("time", "I1_trans", "I2_trans")], id.vars = "time") %>%
+      rename(Type = variable, Value = value) %>%
+      mutate(LineType = "Estimated",
+             Label = ifelse(Type == "I1_trans", "Viral Vector (CMV)", "Vaccine Vector (CMV + LASV/fNP)"))
+    
+    # Plot but remove the legend
+    p <- ggplot() +
+      geom_line(data = true_df, aes(x = time, y = Value, color = Label, linetype = LineType),
+                alpha = 0.55, linewidth = 0.7) +
+      geom_line(data = pred_long, aes(x = time, y = Value, color = Label, linetype = LineType),
+                alpha = 0.9, linewidth = 1)
+    
+    # Noisy sample points
+    for (k in 1:n) {
+      p <- p +
+        geom_point(data = ThisSim, aes_string(x = "time", y = paste0("I1_sample_", k)), 
+                   color = "blue", size = 3.5, alpha = 0.5) +
+        geom_point(data = ThisSim, aes_string(x = "time", y = paste0("I2_sample_", k)), 
+                   color = "red", size = 3.5, alpha = 0.5)
+    }
+    
+    # Final touches - but without legend
+    p <- p +
+      labs(title = paste("Sample Size =", n, "animals"),
+           subtitle = paste(
+             "True: R[0]=", round(ThisSim$Ro[1], 3), 
+             "Kappa=", round(ThisSim$Kappa[1], 3), 
+             "Rho=", round(ThisSim$Rho[1], 3),
+             "Alpha=", round(ThisSim$Alpha[1], 3),
+             "\nEst: R[0]=", round(Results[Results$WhichSim == sim_index & Results$SampleSize == n, "Est_Ro"][1], 3),
+             "Kappa=", round(Results[Results$WhichSim == sim_index & Results$SampleSize == n,"Est_Kappa"][1], 3),
+             "Rho=", round(Results[Results$WhichSim == sim_index & Results$SampleSize == n, "Est_Rho"][1], 3),
+             "Alpha=", round(Results[Results$WhichSim == sim_index & Results$SampleSize == n, "Est_Alpha"][1], 3)
+           )) +
+      scale_color_manual(values = c("Viral Vector (CMV)" = "blue", 
+                                    "Vaccine Vector (CMV + LASV/fNP)" = "red")) +
+      scale_linetype_manual(values = c("True" = "dashed", "Estimated" = "solid")) +
+      theme_minimal() +
+      theme(legend.position = "none")  # Remove the legend from individual plots
+    
+    plots[[as.character(n)]] <- p
+  }
+  
+  # Create a layout with space for the legend
+  # First, create a grid of plots
+  plot_grid <- do.call(arrangeGrob, c(plots, ncol = min(3, length(plots))))
+  
+  # Arrange the plot grid and the legend side by side
+  combined_plot <- grid.arrange(
+    plot_grid, 
+    legend, 
+    ncol = 2, 
+    widths = c(0.85, 0.15)  # Adjust these values as needed
+  )
+  
+  return(combined_plot)
 }
 
-parameter_plots <- plot_comparison(Results, sample_sizes)
+# You need to add this function to extract the legend
+get_legend <- function(a_ggplot) {
+  tmp <- ggplot_gtable(ggplot_build(a_ggplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}
 
-# Display the combined plot
-print(parameter_plots$combined)
+plot_model_fit(sim_index = 98, sample_sizes = c(1, 4, 7))
 
-# Display faceted plots for each parameter
-print(parameter_plots$faceted$Ro)
-print(parameter_plots$faceted$Kappa)
-print(parameter_plots$faceted$Rho)
-print(parameter_plots$faceted$Alpha)
 ```
+
