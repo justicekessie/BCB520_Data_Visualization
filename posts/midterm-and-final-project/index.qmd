@@ -123,6 +123,31 @@ Our collaborators in the University of Western Australia run the murine model of
 
 In this study, I will walk you through my parameter estimation methods and visualizations I have made.
 
+## Mathematical Model
+
+We develop an in-host model that describes the competitive interaction of two viral infections, CMV ($I_1$) and CMV + LASV NP/flu NP ($I_2$), for targets cells ($S$). The system is governed by:
+
+$$
+\begin{aligned}
+\dfrac{d S}{d t} &= -\beta S I_{1} - \beta (1 - \rho) S I_{2} \\
+\dfrac{dI_{1}}{dt} &= \beta S I_{1} - \kappa I_{1} \\
+\dfrac{dI_{2}}{dt} &= (1 - \rho)\beta S I_{2} - (1 + \alpha)\kappa I_{1}
+\end{aligned}
+$$
+
+$I_1$ occurs through contact between target cells and infected cells at rate $\beta S I$, while $I_2$ also occurs at a reduced rate $\beta (1 - \rho) S I$, modulated by the cost of carrying the transgenes- *LASV-NP* or *flu NP.* Once infected, $I_1$ cells are cleared at a rate $\kappa$, whereas $I_2$ cells are cleared more rapidly at a rate $(1 + \alpha)\kappa$. The model is designed to represent the biological dynamics involved in developing a recombinant vector vaccine, where a transgene from the target pathogen, LASV, is inserted into a CMV vector. This genetic modification results in a new construct, CMV+LASV NP, which may incur a fitness cost ($\rho$) due to the added transgene. We hypothesize that this fitness cost influences both the transmission efficiency and the clearance rate of the recombinant vaccine vector within the host.
+
+We rewrite the model as follows by substituting as expression for $\beta$
+
+$$
+\begin{aligned}
+\frac{dS}{dt} &= -\kappa R_0 \frac{S I_1}{S_0} - \kappa (1 - \rho) R_0 \frac{S I_2}{S_0} \\
+\frac{dI_1}{dt} &= \kappa R_0 \frac{S I_1}{S_0} - \kappa I_1 \\
+\frac{dI_2}{dt} &= \kappa R_0 (1 - \rho) \frac{S I_2}{S_0} - (1 + \alpha)\kappa I_2
+\end{aligned}
+$$
+
+
 ```{r}
 #| fig.caption: "Network diagram of the model: Describes the viral kinetics within a host"
 library(visNetwork)
@@ -163,6 +188,10 @@ visNetwork(nodes, edges, width = "100%", height = "400px") %>%
   visLayout(randomSeed = 42)
 
 ```
+## Experimental Data
+
+We simulated the model using randomly selected parameter sets drawn from biologically plausible ranges, generating 100 simulation sets (SimSets), each spanning 0 to 60 days. Based on insights from our murine model, we observed that the true data follows a LogNormal distribution, so we sampled synthetic observations accordingly. For inference, we applied a 1:7 sampling ratio between observed data points and model output. In this analysis, we fixed the noise parameter at to ensure that parameter estimates reliably converge to their true values.
+
 
 ## Parameter Estimation
 
@@ -394,7 +423,7 @@ See the results of the parameter estimation below. The results are saved in a da
 library(DT)
 
 datatable(
-  head(Results),
+  head(Results, 200),
   options = list(scrollX = TRUE),  # Enables horizontal scroll
   class = "display nowrap stripe", # Prevents wrapping
   rownames = FALSE
@@ -459,91 +488,105 @@ The plots above show the estimated parameters against the true parameters. The p
 
 Meanwhile, there is also a clear deviation from the 1:1 line, indicating that the estimates are not perfect. This is expected in real-world scenarios, where various factors can influence the accuracy of parameter estimation. We make a plot of true versus errors to visualize the errors in estimation. The errors are calculated as the difference between the estimated and true values of the parameters, divided by. The points are colored by sample size, and the dashed line represents a 0 error line.
 
-```{r, fig.width=12, fig.height=10}
+## Error in Estimation
+We can also visualize the errors in estimation. The errors are calculated as the absolute difference between the estimated and true values of the parameters, divided by the true values. The points are colored by sample size, and the dashed line represents a 0 error line. The reason we are interested in the errors is that they provide insight into the accuracy of our parameter estimates. A smaller error indicates a more accurate estimate, while a larger error suggests that the estimate may not be reliable.visualize the errors is to see
+```{r, fig.width=15, fig.height=10}
 #| fig.label: "parameter-estimation-errors"
 #| fig.caption: "Parameter estimation errors: This plot shows the errors in estimation. The errors are calculated as the difference between the estimated and true values of the parameters, divided by the true values. The points are colored by sample size, and the dashed line represents a 0 error line."
 #| warning: false
 #| message: false
 Results <- Results %>%
   mutate(
-    Error_Ro = (Est_Ro - True_Ro) / True_Ro,
-    Error_Kappa = (Est_Kappa - True_Kappa) / True_Kappa,
-    Error_Rho = (Est_Rho - True_Rho) / True_Rho,
-    Error_Alpha = (Est_Alpha - True_Alpha) / True_Alpha
+    Error_Ro = abs(Est_Ro - True_Ro) / True_Ro,
+    Error_Kappa = abs(Est_Kappa - True_Kappa) / True_Kappa,
+    Error_Rho = abs(Est_Rho - True_Rho) / True_Rho,
+    Error_Alpha = abs(Est_Alpha - True_Alpha) / True_Alpha
   )
 
-plot_errors <- function(results_df, sample_sizes, error_threshold = 0.1) {
+
+library(ggplot2)
+library(gridExtra)  # For side-by-side plot layout
+
+plot_errors_boxplot <- function(results_df, sample_sizes) {
   results_df$SampleSize <- factor(results_df$SampleSize)
   
-  # Create a list to store plots
   plot_list <- list()
   
   for (param in c("R0", "Kappa", "Rho", "Alpha")) {
-    # Set title label with proper formatting
     if (param == "R0") {
-      true_col <- "True_Ro"
-      est_col <- "Est_Ro"
       error_col <- "Error_Ro"
       title_label <- expression(R[0])
     } else if (param == "Kappa") {
-      true_col <- "True_Kappa"
-      est_col <- "Est_Kappa"
       error_col <- "Error_Kappa"
-      title_label <- expression(Kappa)
+      title_label <- expression(kappa)
     } else if (param == "Rho") {
-      true_col <- "True_Rho"
-      est_col <- "Est_Rho"
       error_col <- "Error_Rho"
-      title_label <- expression(Rho)
+      title_label <- expression(rho)
     } else {
-      true_col <- "True_Alpha"
-      est_col <- "Est_Alpha"
       error_col <- "Error_Alpha"
-      title_label <- expression(Alpha)
+      title_label <- expression(alpha)
     }
     
-    
-    # Create plot
-    p <- ggplot(data = results_df, aes_string(x = true_col, y = error_col)) +
-      geom_point(aes(color = as.factor(SampleSize)), alpha = 0.7) +
-      #geom_smooth(method = "lm", se = FALSE, color = "orange", linetype = "solid") +    # Best fit line
-      facet_wrap(~ SampleSize, nrow = 2, ncol = 4,
-                 labeller = labeller(SampleSize = function(x) paste("Animals:", x))) +
-      labs(x = paste("True", title_label),
-           y = paste("Error in Estimated", title_label),
-           title = paste(title_label, "Parameter Error by Sample Size")) +
-      theme_minimal() +
-      coord_cartesian(
-        xlim = c(min(results_df[[true_col]], na.rm = TRUE) * 0.99, 
-                 max(results_df[[true_col]], na.rm = TRUE) * 1.01),
-        ylim = c(0, error_threshold * 1.01)
+    p <- ggplot(data = results_df, aes_string(x = "SampleSize", y = error_col, fill = "SampleSize")) +
+      geom_boxplot(color = "black", size = 1.2, alpha = 0.8, outlier.shape = 21, outlier.fill = "white") +
+      scale_fill_brewer(palette = "Set2") +
+      labs(
+        x = "Sample Size",
+        y = paste("Error in Estimated", param),
+        title = paste(param)
       ) +
-      theme(plot.title = element_text(hjust = 0.5))
+      theme_minimal(base_size = 14) +
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+        axis.title = element_text(face = "bold"),
+        legend.position = "none",
+        panel.background = element_rect(color = "black", fill = "white", size = 1.2),
+        plot.background = element_rect(color = "gray40", fill = NA, size = 1),
+        panel.border = element_rect(color = "black", fill = NA, size = 1.2)
+      )
     
     plot_list[[param]] <- p
   }
   
   return(plot_list)
 }
-plot_list <- plot_errors(Results, Results$SampleSize, error_threshold = 0.1)
 
-plot_list$R0
+# Filter data
+Results_Error <- Results %>%
+  filter(
+    Error_Ro <= 0.5, 
+    Error_Kappa <= 0.5, 
+    Error_Rho <= 0.5, 
+    Error_Alpha <= 0.5
+  )
 
-plot_list$Kappa
+# Create and display plots
+plot_list_boxplot <- plot_errors_boxplot(Results_Error, Results$SampleSize)
 
-plot_list$Rho
+# Arrange them side-by-side with frames
+grid.arrange(
+  plot_list_boxplot$R0,
+  plot_list_boxplot$Kappa,
+  plot_list_boxplot$Rho,
+  plot_list_boxplot$Alpha,
+  nrow = 1
+)
 
-plot_list$Alpha
+
+
 ```
 
-
-The plots above show the errors in estimation for each parameter. The errors are calculated as the difference between the estimated and true values of the parameters, divided by the true values. The points are colored by sample size, and the dashed line represents a 0 error line. There is a clear trend in the errors, with larger sample sizes generally leading to smaller errors. The orange line represents the linear regression fit to the data, which can help visualize the relationship between true and estimated values.
+From the plots, we can see that the errors in estimation are generally lower for larger sample sizes- at least more visually in the first two panels. This is expected, as larger sample sizes typically provide more information about the underlying population, leading to more accurate estimates. The boxplots also show that the distribution of errors is narrower for larger sample sizes, indicating that the estimates are more consistent across different simulations.
 
 
 ## Model Fits
+
+Finally, we can visualize the model fits for each simulation. The plots show the true and estimated trajectories of the viral vectors over time. The points represent the observed data, while the lines represent the model predictions. The dashed lines indicate the true trajectories, while the solid lines indicate the estimated trajectories.
 ```{r, fig.width=15, fig.height=10}
 #| warning: false
 #| message: false
+
+
 library(deSolve)
 plot_model_fit <- function(sim_index = 1, sample_sizes = c(1, 2, 3, 4, 5, 6, 7)) {
   plots <- list()
@@ -658,6 +701,25 @@ get_legend <- function(a_ggplot) {
 }
 
 plot_model_fit(sim_index = 98, sample_sizes = c(1, 4, 7))
-
+plot_model_fit(sim_index = 87, sample_sizes = c(1, 4, 7))
 ```
+
+We observe that the model fits well for most simulations, with the estimated trajectories closely following the true trajectories. The observed data points (noisy samples) are also well-aligned with the estimated trajectories. However, there are some deviations in certain simulations, indicating that the model may not perfectly capture all aspects of the underlying dynamics. This is expected in real-world scenarios, where various factors can influence the accuracy of parameter estimation.
+
+```{r, fig.width=15, fig.height=10}
+plot_model_fit(sim_index = 23, sample_sizes = c(3, 4, 5))
+plot_model_fit(sim_index = 60, sample_sizes = c(3, 4, 5))
+```
+In these additional two plots, we identified datasets where the model fitting procedure failed or yielded poor diagnostics. The \textbf{first plot} illustrates a trajectory where the model's predicted dynamics deviate entirely from the true underlying path. A likely explanation is that most of the sampled viral load measurements in this case fell below the assay’s \textit{limit of detection (LOD)}. When the data provide insufficient resolution—especially during the early growth phase—the model struggles to infer key parameters accurately.
+
+From a biological perspective, for a virus to establish an infection within a host, the \textit{basic reproductive number} $R_0$ must exceed 1. In the case of recombinant constructs such as CMV expressing LASV NP or Flu NP, the effective reproductive number is moderated by a transmission cost $\rho$, such that:
+$$
+R_0 (1 - \rho) > 1
+$$
+In the first case, this product is approximately equal to 1, meaning the virus expands only marginally over time. As a result, the system exhibits \textit{slow growth}, making it particularly vulnerable to stochastic loss or misestimation due to detection limitations. This is consistent with the observed failure in model recovery.
+
+The \textbf{second plot}, in contrast, should not necessarily be classified as a poor fit. While the \textit{relative errors in parameter estimation} are large, a closer examination reveals that the \textit{predicted and true trajectories begin to converge} as sample size increases. This suggests that the model is capable of recovering the correct dynamics, but requires more informative data—either through denser temporal sampling or measurements above the detection threshold—to achieve precise parameter estimates.
+
+
+
 

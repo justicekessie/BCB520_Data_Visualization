@@ -102,6 +102,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<link href="../../site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet">
+
+<script src="../../site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -191,8 +195,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load necessary libraries</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|message: false</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#|warning: false</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load necessary libraries</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Loading required package: dplyr</code></pre>
 </div>
@@ -245,20 +252,27 @@ Attaching package: 'lubridate'</code></pre>
 ✖ dplyr::lag()    masks stats::lag()
 ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(readr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(readr)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DT)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'DT' was built under R version 4.4.3</code></pre>
+</div>
 </div>
 <section id="hart-memorial-trophy-consideration-identifying-the-top-performing-nhl-players-to-their-respective-teams" class="level2">
 <h2 class="anchored" data-anchor-id="hart-memorial-trophy-consideration-identifying-the-top-performing-nhl-players-to-their-respective-teams">Hart Memorial Trophy Consideration: Identifying the Top-Performing NHL Players to their Respective Teams</h2>
 <p>To identify the top-performing NHL players for the Hart Memorial Trophy consideration, we need to analyze player performance based on key metrics such as goals, assists, points, and plus-minus rating. The following R code snippet demonstrates how to load and analyze NHL player data to identify the top-performing players based on these metrics.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>nhl_lines <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"lines.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|message: false</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co">#|warning: false</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>nhl_lines <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"lines.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>To do this, we created key metrics such as net value, net value per 60 minutes, team share, and “most valuable player” (MVP) score to evaluate player performance. We then filtered the dataset to include only players with a sufficient number of games played and calculated the MVP score for each player based on these metrics.</p>
 <p>MVP Score measures the player’s overall contribution to the team’s success, considering their performance in key areas such as goals, assists, and time on ice. The formula for MVP Score is a combination of net value per 60 minutes, time on ice, and team contribution percentage. The higher the MVP Score, the more valuable the player is to their team.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Results</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(top5[, <span class="fu">c</span>(<span class="st">"name"</span>, <span class="st">"team"</span>, <span class="st">"position"</span>, <span class="st">"mvp_score"</span>, <span class="st">"netValue_per60"</span>, <span class="st">"icetime"</span>, <span class="st">"team_share"</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Results, use DTable</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(top5[, <span class="fu">c</span>(<span class="st">"name"</span>, <span class="st">"team"</span>, <span class="st">"position"</span>, <span class="st">"mvp_score"</span>, <span class="st">"netValue_per60"</span>, <span class="st">"icetime"</span>, <span class="st">"team_share"</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                   name team position mvp_score netValue_per60 icetime
 873     Ekholm-Bouchard  EDM  pairing 0.7051221     0.01650297   56099
@@ -275,12 +289,15 @@ Attaching package: 'lubridate'</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Top 10 MVP scores</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">head</span>(hart_ballot, <span class="dv">10</span>), <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(name, mvp_score), <span class="at">y=</span>mvp_score, <span class="at">fill=</span>team)) <span class="sc">+</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">"identity"</span>) <span class="sc">+</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Hart Trophy Candidates: MVP Score"</span>, <span class="at">x=</span><span class="st">"Player"</span>, <span class="at">y=</span><span class="st">"MVP Score"</span>) <span class="sc">+</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|message: false</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co">#|warning: false</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Top 10 MVP scores</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">head</span>(hart_ballot, <span class="dv">10</span>), <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(name, mvp_score), <span class="at">y=</span>mvp_score, <span class="at">fill=</span>team)) <span class="sc">+</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">"identity"</span>) <span class="sc">+</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Hart Trophy Candidates: MVP Score"</span>, <span class="at">x=</span><span class="st">"Player"</span>, <span class="at">y=</span><span class="st">"MVP Score"</span>) <span class="sc">+</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -296,36 +313,34 @@ Attaching package: 'lubridate'</code></pre>
 <h2 class="anchored" data-anchor-id="vezina-trophy-consideration-identifying-the-top-performing-nhl-goalies">Vezina Trophy Consideration: Identifying the Top-Performing NHL Goalies</h2>
 <p>To find the best goalies in the NHL, we need to analyze their performance based on key metrics such as save percentage and goals against average (GAA). The following R code snippet demonstrates how to load and analyze NHL goalie data to identify the top-performing goalies based on these metrics for the Vezina Trophy consideration.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>shots_data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"shots_2024.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|message: false</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co">#|warning: false</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>shots_data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"shots_2024.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We summarize the goalie performance based on the number of shots faced, goals allowed, saves made, save percentage, and games played. We then calculate the goals against average (GAA) for each goalie to further evaluate their performance.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>goalie_stats <span class="ot">&lt;-</span> shots_data <span class="sc">%&gt;%</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(shotWasOnGoal <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span>  <span class="co"># Only consider shots on goal</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(goalieNameForShot) <span class="sc">%&gt;%</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Shots_On_Goal =</span> <span class="fu">n</span>(),</span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Goals_Allowed =</span> <span class="fu">sum</span>(goal),</span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">Saves =</span> Shots_On_Goal <span class="sc">-</span> Goals_Allowed,</span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">Save_Percentage =</span> Saves <span class="sc">/</span> Shots_On_Goal,</span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">Games_Played =</span> <span class="fu">n_distinct</span>(game_id)</span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Save_Percentage))</span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="co"># View top goalies</span></span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(goalie_stats)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 6
-  goalieNameForShot Shots_On_Goal Goals_Allowed Saves Save_Percentage
-  &lt;chr&gt;                     &lt;int&gt;         &lt;int&gt; &lt;int&gt;           &lt;dbl&gt;
-1 Akira Schmid                 12             0    12           1    
-2 Nico Daws                    88             3    85           0.966
-3 Erik Portillo                29             1    28           0.966
-4 Marcus Hogberg              177            11   166           0.938
-5 Connor Hellebuyck          1395           102  1293           0.927
-6 Louis Domingue               27             2    25           0.926
-# ℹ 1 more variable: Games_Played &lt;int&gt;</code></pre>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>goalie_stats <span class="ot">&lt;-</span> shots_data <span class="sc">%&gt;%</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(shotWasOnGoal <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span>  <span class="co"># Only consider shots on goal</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(goalieNameForShot) <span class="sc">%&gt;%</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Shots_On_Goal =</span> <span class="fu">n</span>(),</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Goals_Allowed =</span> <span class="fu">sum</span>(goal),</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">Saves =</span> Shots_On_Goal <span class="sc">-</span> Goals_Allowed,</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">Save_Percentage =</span> Saves <span class="sc">/</span> Shots_On_Goal,</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">Games_Played =</span> <span class="fu">n_distinct</span>(game_id)</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Save_Percentage))</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a><span class="co"># View top goalies</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(goalie_stats)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["goalieNameForShot"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Shots_On_Goal"],"name":[2],"type":["int"],"align":["right"]},{"label":["Goals_Allowed"],"name":[3],"type":["int"],"align":["right"]},{"label":["Saves"],"name":[4],"type":["int"],"align":["right"]},{"label":["Save_Percentage"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Games_Played"],"name":[6],"type":["int"],"align":["right"]}],"data":[{"1":"Akira Schmid","2":"12","3":"0","4":"12","5":"1.0000000","6":"1"},{"1":"Nico Daws","2":"88","3":"3","4":"85","5":"0.9659091","6":"4"},{"1":"Erik Portillo","2":"29","3":"1","4":"28","5":"0.9655172","6":"1"},{"1":"Marcus Hogberg","2":"177","3":"11","4":"166","5":"0.9378531","6":"8"},{"1":"Connor Hellebuyck","2":"1395","3":"102","4":"1293","5":"0.9268817","6":"52"},{"1":"Louis Domingue","2":"27","3":"2","4":"25","5":"0.9259259","6":"1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
 </div>
 </div>
 <p>Next, we calculate the goals against average (GAA) for each goalie by dividing the total goals allowed by the total games played. We then merge the two datasets to compare the goalies based on save percentage and GAA.</p>
@@ -342,87 +357,67 @@ Attaching package: 'lubridate'</code></pre>
 <span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="co"># View best GAA goalies</span></span>
 <span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(goalie_gaa)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 4
-  goalieNameForShot Goals_Allowed Games_Played   GAA
-  &lt;chr&gt;                     &lt;int&gt;        &lt;int&gt; &lt;dbl&gt;
-1 "Akira Schmid"                0            1  0   
-2 "Nico Daws"                   3            4  0.75
-3 "Erik Portillo"               1            1  1   
-4 "Yaniv Perets"                1            1  1   
-5 ""                          418          395  1.06
-6 "Marcus Hogberg"             11            8  1.38</code></pre>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["goalieNameForShot"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Goals_Allowed"],"name":[2],"type":["int"],"align":["right"]},{"label":["Games_Played"],"name":[3],"type":["int"],"align":["right"]},{"label":["GAA"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"Akira Schmid","2":"0","3":"1","4":"0.000000"},{"1":"Nico Daws","2":"3","3":"4","4":"0.750000"},{"1":"Erik Portillo","2":"1","3":"1","4":"1.000000"},{"1":"Yaniv Perets","2":"1","3":"1","4":"1.000000"},{"1":"","2":"418","3":"395","4":"1.058228"},{"1":"Marcus Hogberg","2":"11","3":"8","4":"1.375000"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Merge the two datasets and delete the duplicate colummns</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>goalie_performance <span class="ot">&lt;-</span> <span class="fu">merge</span>(goalie_stats, goalie_gaa, <span class="at">by=</span><span class="st">"goalieNameForShot"</span>)</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Rank by Save Percentage and GAA</span></span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>goalie_performance <span class="ot">&lt;-</span> goalie_performance <span class="sc">%&gt;%</span></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Save_Percentage), GAA)</span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="co"># View top-ranked goalies</span></span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(goalie_performance)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>  goalieNameForShot Shots_On_Goal Goals_Allowed.x Saves Save_Percentage
-1      Akira Schmid            12               0    12       1.0000000
-2         Nico Daws            88               3    85       0.9659091
-3     Erik Portillo            29               1    28       0.9655172
-4    Marcus Hogberg           177              11   166       0.9378531
-5 Connor Hellebuyck          1395             102  1293       0.9268817
-6    Louis Domingue            27               2    25       0.9259259
-  Games_Played.x Goals_Allowed.y Games_Played.y      GAA
-1              1               0              1 0.000000
-2              4               3              4 0.750000
-3              1               1              1 1.000000
-4              8              11              8 1.375000
-5             52             102             52 1.961538
-6              1               2              1 2.000000</code></pre>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Merge the two datasets and delete the duplicate colummns</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>goalie_performance <span class="ot">&lt;-</span> <span class="fu">merge</span>(goalie_stats, goalie_gaa, <span class="at">by=</span><span class="st">"goalieNameForShot"</span>)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Rank by Save Percentage and GAA</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>goalie_performance <span class="ot">&lt;-</span> goalie_performance <span class="sc">%&gt;%</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Save_Percentage), GAA)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="co"># View top-ranked goalies</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(goalie_performance)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["goalieNameForShot"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Shots_On_Goal"],"name":[2],"type":["int"],"align":["right"]},{"label":["Goals_Allowed.x"],"name":[3],"type":["int"],"align":["right"]},{"label":["Saves"],"name":[4],"type":["int"],"align":["right"]},{"label":["Save_Percentage"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Games_Played.x"],"name":[6],"type":["int"],"align":["right"]},{"label":["Goals_Allowed.y"],"name":[7],"type":["int"],"align":["right"]},{"label":["Games_Played.y"],"name":[8],"type":["int"],"align":["right"]},{"label":["GAA"],"name":[9],"type":["dbl"],"align":["right"]}],"data":[{"1":"Akira Schmid","2":"12","3":"0","4":"12","5":"1.0000000","6":"1","7":"0","8":"1","9":"0.000000","_rn_":"1"},{"1":"Nico Daws","2":"88","3":"3","4":"85","5":"0.9659091","6":"4","7":"3","8":"4","9":"0.750000","_rn_":"2"},{"1":"Erik Portillo","2":"29","3":"1","4":"28","5":"0.9655172","6":"1","7":"1","8":"1","9":"1.000000","_rn_":"3"},{"1":"Marcus Hogberg","2":"177","3":"11","4":"166","5":"0.9378531","6":"8","7":"11","8":"8","9":"1.375000","_rn_":"4"},{"1":"Connor Hellebuyck","2":"1395","3":"102","4":"1293","5":"0.9268817","6":"52","7":"102","8":"52","9":"1.961538","_rn_":"5"},{"1":"Louis Domingue","2":"27","3":"2","4":"25","5":"0.9259259","6":"1","7":"2","8":"1","9":"2.000000","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
 </div>
 </div>
 <p>To filter out goalies who have faced a minimum number of shots and played a minimum number of games, we set thresholds for shots faced and games played. We then filter the dataset to include only goalies who meet these criteria. By the way, forgo the duplicate columns.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set a threshold for minimum shots faced</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>min_shots <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>min_games_played <span class="ot">&lt;-</span> <span class="dv">50</span></span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter goalies who faced at least 'min_shots'</span></span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>goalie_performance_filtered <span class="ot">&lt;-</span> goalie_performance <span class="sc">%&gt;%</span></span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Shots_On_Goal <span class="sc">&gt;=</span> min_shots <span class="sc">&amp;</span> Games_Played.x <span class="sc">&gt;=</span> min_games_played) <span class="sc">%&gt;%</span></span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Save_Percentage), GAA)</span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="co"># View the updated rankings</span></span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(goalie_performance_filtered)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>     goalieNameForShot Shots_On_Goal Goals_Allowed.x Saves Save_Percentage
-1    Connor Hellebuyck          1395             102  1293       0.9268817
-2   Andrei Vasilevskiy          1454             117  1337       0.9195323
-3         Ilya Sorokin          1393             131  1262       0.9059584
-4      Igor Shesterkin          1410             133  1277       0.9056738
-5 Ukko-Pekka Luukkonen          1350             151  1199       0.8881481
-  Games_Played.x Goals_Allowed.y Games_Played.y      GAA
-1             52             102             52 1.961538
-2             53             117             53 2.207547
-3             50             131             50 2.620000
-4             50             133             50 2.660000
-5             50             151             50 3.020000</code></pre>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set a threshold for minimum shots faced</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>min_shots <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>min_games_played <span class="ot">&lt;-</span> <span class="dv">50</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter goalies who faced at least 'min_shots'</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>goalie_performance_filtered <span class="ot">&lt;-</span> goalie_performance <span class="sc">%&gt;%</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Shots_On_Goal <span class="sc">&gt;=</span> min_shots <span class="sc">&amp;</span> Games_Played.x <span class="sc">&gt;=</span> min_games_played) <span class="sc">%&gt;%</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Save_Percentage), GAA)</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="co"># View the updated rankings</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(goalie_performance_filtered)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["goalieNameForShot"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Shots_On_Goal"],"name":[2],"type":["int"],"align":["right"]},{"label":["Goals_Allowed.x"],"name":[3],"type":["int"],"align":["right"]},{"label":["Saves"],"name":[4],"type":["int"],"align":["right"]},{"label":["Save_Percentage"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Games_Played.x"],"name":[6],"type":["int"],"align":["right"]},{"label":["Goals_Allowed.y"],"name":[7],"type":["int"],"align":["right"]},{"label":["Games_Played.y"],"name":[8],"type":["int"],"align":["right"]},{"label":["GAA"],"name":[9],"type":["dbl"],"align":["right"]}],"data":[{"1":"Connor Hellebuyck","2":"1395","3":"102","4":"1293","5":"0.9268817","6":"52","7":"102","8":"52","9":"1.961538","_rn_":"1"},{"1":"Andrei Vasilevskiy","2":"1454","3":"117","4":"1337","5":"0.9195323","6":"53","7":"117","8":"53","9":"2.207547","_rn_":"2"},{"1":"Ilya Sorokin","2":"1393","3":"131","4":"1262","5":"0.9059584","6":"50","7":"131","8":"50","9":"2.620000","_rn_":"3"},{"1":"Igor Shesterkin","2":"1410","3":"133","4":"1277","5":"0.9056738","6":"50","7":"133","8":"50","9":"2.660000","_rn_":"4"},{"1":"Ukko-Pekka Luukkonen","2":"1350","3":"151","4":"1199","5":"0.8881481","6":"50","7":"151","8":"50","9":"3.020000","_rn_":"5"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
 </div>
 </div>
 <p>Finally, we create a scatter plot to visualize the relationship between save percentage and goals against average for the top-performing goalies. We use point size to represent the number of shots faced by each goalie. The plot provides a clear comparison of goalie performance based on these key metrics.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(goalie_performance_filtered, <span class="fu">aes</span>(<span class="at">x =</span> Save_Percentage, <span class="at">y =</span> GAA, <span class="at">label =</span> goalieNameForShot, <span class="at">size =</span> Shots_On_Goal)) <span class="sc">+</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span>  <span class="co"># Semi-transparent points for better visualization</span></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">vjust =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="fl">3.5</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>) <span class="sc">+</span>  <span class="co"># Clearer labels</span></span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_size</span>(<span class="at">range =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">8</span>)) <span class="sc">+</span>  <span class="co"># Adjust point sizes for better distinction</span></span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"🏒 Goalie Performance: Save Percentage vs Goals Against Average"</span>,</span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="fu">paste</span>(<span class="st">"Minimum"</span>, min_shots, <span class="st">"shots faced required for inclusion"</span>),</span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Save Percentage (Higher is Better)"</span>,</span>
-<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Goals Against Average (Lower is Better)"</span>,</span>
-<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="st">"Shots Faced"</span></span>
-<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(goalie_performance_filtered, <span class="fu">aes</span>(<span class="at">x =</span> Save_Percentage, <span class="at">y =</span> GAA, <span class="at">label =</span> goalieNameForShot, <span class="at">size =</span> Shots_On_Goal)) <span class="sc">+</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span>  <span class="co"># Semi-transparent points for better visualization</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">vjust =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="fl">3.5</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>) <span class="sc">+</span>  <span class="co"># Clearer labels</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_size</span>(<span class="at">range =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">8</span>)) <span class="sc">+</span>  <span class="co"># Adjust point sizes for better distinction</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"🏒 Goalie Performance: Save Percentage vs Goals Against Average"</span>,</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="fu">paste</span>(<span class="st">"Minimum"</span>, min_shots, <span class="st">"shots faced required for inclusion"</span>),</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Save Percentage (Higher is Better)"</span>,</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Goals Against Average (Lower is Better)"</span>,</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="st">"Shots Faced"</span></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -437,39 +432,39 @@ Attaching package: 'lubridate'</code></pre>
 <h2 class="anchored" data-anchor-id="james-norris-memorial-trophy-consideration-identifying-the-best-all-around-defenseman">James Norris Memorial Trophy Consideration: Identifying the “Best All-Around” Defenseman</h2>
 <p>Here, we used the NHL Draft Stats dataset to identify the top defensemen based on key metrics such as points per game, assists per game, goals per game, offensive score, and defensive score. We then filtered the dataset to include only defensemen who played more than 50 games and ranked them based on their offensive and defensive scores.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>NHLDraftStats <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"SkaterIndividualstats.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>NHLDraftStats <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"SkaterIndividualstats.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Offensive score is calculated as the sum of points per game, assists per game, and goals per game, while defensive score is calculated as the sum of shots blocked, hits, takeaways, and penalized by giveaways per game. We then rank the defensemen based on their offensive and defensive scores to identify the top performers.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter out defensemen</span></span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>defensemen <span class="ot">&lt;-</span> NHLDraftStats <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Position <span class="sc">==</span> <span class="st">"D"</span>)</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute key metrics</span></span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>defensemen <span class="ot">&lt;-</span> defensemen <span class="sc">%&gt;%</span></span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">PPG =</span> Total.Points <span class="sc">/</span> GP, <span class="co"># points per game</span></span>
-<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">APG =</span> Total.Assists <span class="sc">/</span> GP,<span class="co"># assists per game</span></span>
-<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">GPG =</span> Goals <span class="sc">/</span> GP,   <span class="co"># goals per game</span></span>
-<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">Offensive.Score  =</span> PPG <span class="sc">+</span> APG <span class="sc">+</span> GPG, <span class="co"># offensive score</span></span>
-<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">Defensive.Score =</span> (Shots.Blocked <span class="sc">+</span> Hits <span class="sc">+</span> Takeaways <span class="sc">-</span> Giveaways) <span class="sc">/</span> GP</span>
-<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Shortlisted to players who played more than 50 games</span></span>
-<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>defensemen <span class="ot">&lt;-</span> defensemen <span class="sc">%&gt;%</span> <span class="fu">filter</span>(GP <span class="sc">&gt;</span> <span class="dv">50</span>)</span>
-<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Rank players based on Defensive Score PPG and total points</span></span>
-<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>top_defensemen <span class="ot">&lt;-</span> defensemen <span class="sc">%&gt;%</span> </span>
-<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Defensive.Score <span class="sc">+</span> Offensive.Score)) <span class="sc">%&gt;%</span> </span>
-<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter out defensemen</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>defensemen <span class="ot">&lt;-</span> NHLDraftStats <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Position <span class="sc">==</span> <span class="st">"D"</span>)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute key metrics</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>defensemen <span class="ot">&lt;-</span> defensemen <span class="sc">%&gt;%</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">PPG =</span> Total.Points <span class="sc">/</span> GP, <span class="co"># points per game</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">APG =</span> Total.Assists <span class="sc">/</span> GP,<span class="co"># assists per game</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">GPG =</span> Goals <span class="sc">/</span> GP,   <span class="co"># goals per game</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">Offensive.Score  =</span> PPG <span class="sc">+</span> APG <span class="sc">+</span> GPG, <span class="co"># offensive score</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">Defensive.Score =</span> (Shots.Blocked <span class="sc">+</span> Hits <span class="sc">+</span> Takeaways <span class="sc">-</span> Giveaways) <span class="sc">/</span> GP</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Shortlisted to players who played more than 50 games</span></span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>defensemen <span class="ot">&lt;-</span> defensemen <span class="sc">%&gt;%</span> <span class="fu">filter</span>(GP <span class="sc">&gt;</span> <span class="dv">50</span>)</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Rank players based on Defensive Score PPG and total points</span></span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>top_defensemen <span class="ot">&lt;-</span> defensemen <span class="sc">%&gt;%</span> </span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Defensive.Score <span class="sc">+</span> Offensive.Score)) <span class="sc">%&gt;%</span> </span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Here is a visualization of the top 5 defensemen based on their total points, combining offensive and defensive scores. The bar chart provides a clear comparison of the top defensemen based on their overall performance.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bar chart of total points</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(top_defensemen, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(Player, <span class="sc">-</span>(Defensive.Score <span class="sc">*</span> Offensive.Score)), <span class="at">y =</span> Defensive.Score <span class="sc">*</span> Offensive.Score, <span class="at">fill =</span> Player)) <span class="sc">+</span></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">'identity'</span>) <span class="sc">+</span></span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">'Top 5 Defensemen - Total Points'</span>, <span class="at">x =</span> <span class="st">'Player'</span>, <span class="at">y =</span> <span class="st">'Total Points'</span>) <span class="sc">+</span></span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bar chart of total points</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(top_defensemen, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(Player, <span class="sc">-</span>(Defensive.Score <span class="sc">*</span> Offensive.Score)), <span class="at">y =</span> Defensive.Score <span class="sc">*</span> Offensive.Score, <span class="at">fill =</span> Player)) <span class="sc">+</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">'identity'</span>) <span class="sc">+</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">'Top 5 Defensemen - Total Points'</span>, <span class="at">x =</span> <span class="st">'Player'</span>, <span class="at">y =</span> <span class="st">'Total Points'</span>) <span class="sc">+</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -483,12 +478,12 @@ Attaching package: 'lubridate'</code></pre>
 <section id="calder-memorial-trophy-consideration-identifying-the-top-rookie-performer" class="level2">
 <h2 class="anchored" data-anchor-id="calder-memorial-trophy-consideration-identifying-the-top-rookie-performer">Calder Memorial Trophy Consideration: Identifying the Top Rookie Performer</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>rookie_stats <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"RookieSkaterIndividual.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>rookie_stats <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"RookieSkaterIndividual.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># View the first few rows</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(rookie_stats)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># View the first few rows</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(rookie_stats)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] "X"                "Player"           "Team"             "Position"        
  [5] "GP"               "TOI"              "Goals"            "Total.Assists"   
@@ -502,39 +497,39 @@ Attaching package: 'lubridate'</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute key metrics</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>rookies <span class="ot">&lt;-</span> rookie_stats <span class="sc">%&gt;%</span></span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">PPG =</span> Total.Points <span class="sc">/</span> GP,</span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">APG =</span> Total.Assists <span class="sc">/</span> GP,</span>
-<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">GPG =</span> Goals <span class="sc">/</span> GP,</span>
-<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">Rookie.Score =</span> (Total.Points <span class="sc">+</span> (Takeaways <span class="sc">-</span> Giveaways) <span class="sc">+</span> Shots <span class="sc">+</span> Hits) <span class="sc">/</span> GP,</span>
-<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">PPGRS =</span> PPG <span class="sc">*</span> Rookie.Score <span class="co"># combined metric of PPG and Rookie Score</span></span>
-<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Rank players based on overall Rookie Score</span></span>
-<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>top_rookies <span class="ot">&lt;-</span> rookies <span class="sc">%&gt;%</span> </span>
-<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Rookie.Score)) <span class="sc">%&gt;%</span> </span>
-<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>)</span>
-<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure PPG is not missing or NA</span></span>
-<span id="cb38-17"><a href="#cb38-17" aria-hidden="true" tabindex="-1"></a>top_rookies <span class="ot">&lt;-</span> top_rookies <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(PPG))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute key metrics</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>rookies <span class="ot">&lt;-</span> rookie_stats <span class="sc">%&gt;%</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">PPG =</span> Total.Points <span class="sc">/</span> GP,</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">APG =</span> Total.Assists <span class="sc">/</span> GP,</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">GPG =</span> Goals <span class="sc">/</span> GP,</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">Rookie.Score =</span> (Total.Points <span class="sc">+</span> (Takeaways <span class="sc">-</span> Giveaways) <span class="sc">+</span> Shots <span class="sc">+</span> Hits) <span class="sc">/</span> GP,</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">PPGRS =</span> PPG <span class="sc">*</span> Rookie.Score <span class="co"># combined metric of PPG and Rookie Score</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Rank players based on overall Rookie Score</span></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>top_rookies <span class="ot">&lt;-</span> rookies <span class="sc">%&gt;%</span> </span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Rookie.Score)) <span class="sc">%&gt;%</span> </span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>)</span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure PPG is not missing or NA</span></span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a>top_rookies <span class="ot">&lt;-</span> top_rookies <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(PPG))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(top_rookies, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(Player, <span class="sc">-</span>PPGRS))) <span class="sc">+</span></span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> PPGRS, <span class="at">fill =</span> Player), <span class="at">stat =</span> <span class="st">'identity'</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> PPG <span class="sc">*</span> <span class="fu">max</span>(Rookie.Score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="fu">max</span>(PPG, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">group =</span> <span class="dv">1</span>), </span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">color =</span> <span class="st">'blue'</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> PPG <span class="sc">*</span> <span class="fu">max</span>(Rookie.Score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="fu">max</span>(PPG, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)), </span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">color =</span> <span class="st">'blue'</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(</span>
-<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">'Rookie Score'</span>, </span>
-<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">sec.axis =</span> <span class="fu">sec_axis</span>(<span class="sc">~</span> . <span class="sc">*</span> <span class="fu">max</span>(top_rookies<span class="sc">$</span>PPG, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="fu">max</span>(top_rookies<span class="sc">$</span>Rookie.Score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
-<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>                        <span class="at">name =</span> <span class="st">'PPG'</span>)</span>
-<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">'Top 5 Rookies - Rookie Score &amp; PPG'</span>, <span class="at">x =</span> <span class="st">'Player'</span>) <span class="sc">+</span></span>
-<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(top_rookies, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(Player, <span class="sc">-</span>PPGRS))) <span class="sc">+</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> PPGRS, <span class="at">fill =</span> Player), <span class="at">stat =</span> <span class="st">'identity'</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> PPG <span class="sc">*</span> <span class="fu">max</span>(Rookie.Score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="fu">max</span>(PPG, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">group =</span> <span class="dv">1</span>), </span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">color =</span> <span class="st">'blue'</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> PPG <span class="sc">*</span> <span class="fu">max</span>(Rookie.Score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="fu">max</span>(PPG, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)), </span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">color =</span> <span class="st">'blue'</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">'Rookie Score'</span>, </span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">sec.axis =</span> <span class="fu">sec_axis</span>(<span class="sc">~</span> . <span class="sc">*</span> <span class="fu">max</span>(top_rookies<span class="sc">$</span>PPG, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="fu">max</span>(top_rookies<span class="sc">$</span>Rookie.Score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>                        <span class="at">name =</span> <span class="st">'PPG'</span>)</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">'Top 5 Rookies - Rookie Score &amp; PPG'</span>, <span class="at">x =</span> <span class="st">'Player'</span>) <span class="sc">+</span></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -547,108 +542,71 @@ Attaching package: 'lubridate'</code></pre>
 <section id="frank-j.-selke-trophy-consideration-identifying-the-best-defensive-forward" class="level2">
 <h2 class="anchored" data-anchor-id="frank-j.-selke-trophy-consideration-identifying-the-best-defensive-forward">Frank J. Selke Trophy Consideration: Identifying the Best Defensive Forward</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using the previous dataset</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Filtering for forwards and calculating Selke Score</span></span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>forwards <span class="ot">&lt;-</span> rookie_stats <span class="sc">%&gt;%</span></span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Position <span class="sc">!=</span> <span class="st">"D"</span> <span class="sc">&amp;</span> GP <span class="sc">&gt;=</span> <span class="dv">50</span>) <span class="sc">%&gt;%</span>  </span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Takeaway_Ratio =</span> Takeaways <span class="sc">/</span> (Takeaways <span class="sc">+</span> Giveaways),</span>
-<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">Blocked_Shot_Rate =</span> Shots.Blocked <span class="sc">/</span> TOI <span class="sc">*</span> <span class="dv">60</span>,</span>
-<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">Faceoff_Effectiveness =</span> <span class="fu">ifelse</span>(Faceoffs.Won <span class="sc">+</span> Faceoffs.Lost <span class="sc">&gt;</span> <span class="dv">0</span>, </span>
-<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>                                  Faceoffs.Won <span class="sc">/</span> (Faceoffs.Won <span class="sc">+</span> Faceoffs.Lost), <span class="dv">0</span>),</span>
-<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">Penalty_Discipline =</span> <span class="dv">1</span> <span class="sc">-</span> (PIM <span class="sc">/</span> (TOI<span class="sc">/</span><span class="dv">60</span>)),</span>
-<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Combine into Selke Score</span></span>
-<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">Selke_Score =</span> (</span>
-<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>      (Takeaway_Ratio <span class="sc">*</span> <span class="fl">2.5</span>) <span class="sc">+</span>          <span class="co"># Takeaways and giveaways</span></span>
-<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>      (Blocked_Shot_Rate <span class="sc">*</span> <span class="fl">1.5</span>) <span class="sc">+</span>        <span class="co"># Blocking shots as a forward</span></span>
-<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a>      (Faceoff_Effectiveness <span class="sc">*</span> <span class="dv">2</span>) <span class="sc">+</span>      <span class="co"># Winning defensive zone faceoffs</span></span>
-<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a>      (Penalty_Discipline <span class="sc">*</span> <span class="fl">1.5</span>) <span class="sc">+</span>       <span class="co"># Staying out of the box</span></span>
-<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a>      (Hits <span class="sc">*</span> <span class="fl">0.05</span>) <span class="sc">+</span>                    <span class="co"># Physical play</span></span>
-<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a>      (TOI <span class="sc">/</span> <span class="fu">max</span>(TOI, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="fl">1.5</span>)  <span class="co"># Coaches trust (ice time)</span></span>
-<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Scale the score for easier interpretation</span></span>
-<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Selke_Score =</span> Selke_Score <span class="sc">/</span> <span class="fu">max</span>(Selke_Score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>)</span>
-<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(forwards)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>    X           Player Team Position GP       TOI Goals Total.Assists
-1  41 Kirill Marchenko  CBJ        R 57 1071.6167    24            36
-2 145   Wyatt Johnston  DAL        C 60 1147.8833    21            34
-3  93      Marco Rossi  MIN        C 61 1117.2333    21            30
-4 115       JJ Peterka  BUF        R 57 1029.9500    17            30
-5 163     Logan Cooley  UTA        C 54  957.0333    17            30
-6  92   Dylan Holloway  STL        L 62 1031.9833    20            26
-  First.Assists Second.Assists Total.Points   IPP Shots   SH.   ixG iCF iFF
-1            23             13           60 64.52   155 15.48 17.56 323 226
-2            23             11           55 67.90   163 12.88 27.08 311 239
-3            17             13           51 69.86   102 20.59 15.52 198 155
-4            14             16           47 55.29   129 13.18 14.74 294 207
-5            15             15           47 67.14   115 14.78 12.16 219 164
-6            13             13           46 71.88   145 13.79 14.81 276 197
-  iSCF iHDCF Rush.Attempts Rebounds.Created PIM Total.Penalties Minor Major
-1  147    48             9               35  14               7     7     0
-2  225   116             4               35  12               6     6     0
-3  136    76             3               26  24              12    12     0
-4  131    43            12               20  24               8     7     0
-5  106    40             3               14  30              15    15     0
-6  139    57            10               24  10               5     5     0
-  Misconduct Penalties.Drawn Giveaways Takeaways Hits Hits.Taken Shots.Blocked
-1          0              13        65        29   43         67            29
-2          0              10        36        25   32         72            30
-3          0              16        42        14   42         49            28
-4          1              11        58        14   27         57             7
-5          0              13        48        20   40         94            24
-6          0               8        59        32  133         75            39
-  Faceoffs.Won Faceoffs.Lost Faceoffs.. Takeaway_Ratio Blocked_Shot_Rate
-1           11            24      31.43      0.3085106         1.6237149
-2          337           343      49.56      0.4098361         1.5681036
-3          349           388      47.35      0.2500000         1.5037145
-4            2             4      33.33      0.1944444         0.4077868
-5          241           298      44.71      0.2941176         1.5046498
-6           59            80      42.45      0.3516484         2.2674785
-  Faceoff_Effectiveness Penalty_Discipline Selke_Score
-1             0.3142857          0.2161376    49.79191
-2             0.4955882          0.3727586    51.83975
-3             0.4735414         -0.2888982    44.91144
-4             0.3333333         -0.3981261    24.94876
-5             0.4471243         -0.8808122    37.55984
-6             0.4244604          0.4185953    88.83601</code></pre>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using the previous dataset</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Filtering for forwards and calculating Selke Score</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>forwards <span class="ot">&lt;-</span> rookie_stats <span class="sc">%&gt;%</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Position <span class="sc">!=</span> <span class="st">"D"</span> <span class="sc">&amp;</span> GP <span class="sc">&gt;=</span> <span class="dv">50</span>) <span class="sc">%&gt;%</span>  </span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Takeaway_Ratio =</span> Takeaways <span class="sc">/</span> (Takeaways <span class="sc">+</span> Giveaways),</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">Blocked_Shot_Rate =</span> Shots.Blocked <span class="sc">/</span> TOI <span class="sc">*</span> <span class="dv">60</span>,</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">Faceoff_Effectiveness =</span> <span class="fu">ifelse</span>(Faceoffs.Won <span class="sc">+</span> Faceoffs.Lost <span class="sc">&gt;</span> <span class="dv">0</span>, </span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>                                  Faceoffs.Won <span class="sc">/</span> (Faceoffs.Won <span class="sc">+</span> Faceoffs.Lost), <span class="dv">0</span>),</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">Penalty_Discipline =</span> <span class="dv">1</span> <span class="sc">-</span> (PIM <span class="sc">/</span> (TOI<span class="sc">/</span><span class="dv">60</span>)),</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Combine into Selke Score</span></span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">Selke_Score =</span> (</span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>      (Takeaway_Ratio <span class="sc">*</span> <span class="fl">2.5</span>) <span class="sc">+</span>          <span class="co"># Takeaways and giveaways</span></span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>      (Blocked_Shot_Rate <span class="sc">*</span> <span class="fl">1.5</span>) <span class="sc">+</span>        <span class="co"># Blocking shots as a forward</span></span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a>      (Faceoff_Effectiveness <span class="sc">*</span> <span class="dv">2</span>) <span class="sc">+</span>      <span class="co"># Winning defensive zone faceoffs</span></span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a>      (Penalty_Discipline <span class="sc">*</span> <span class="fl">1.5</span>) <span class="sc">+</span>       <span class="co"># Staying out of the box</span></span>
+<span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a>      (Hits <span class="sc">*</span> <span class="fl">0.05</span>) <span class="sc">+</span>                    <span class="co"># Physical play</span></span>
+<span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a>      (TOI <span class="sc">/</span> <span class="fu">max</span>(TOI, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="fl">1.5</span>)  <span class="co"># Coaches trust (ice time)</span></span>
+<span id="cb37-20"><a href="#cb37-20" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb37-21"><a href="#cb37-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb37-22"><a href="#cb37-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Scale the score for easier interpretation</span></span>
+<span id="cb37-23"><a href="#cb37-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Selke_Score =</span> Selke_Score <span class="sc">/</span> <span class="fu">max</span>(Selke_Score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>)</span>
+<span id="cb37-24"><a href="#cb37-24" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(forwards)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["X"],"name":[1],"type":["int"],"align":["right"]},{"label":["Player"],"name":[2],"type":["chr"],"align":["left"]},{"label":["Team"],"name":[3],"type":["chr"],"align":["left"]},{"label":["Position"],"name":[4],"type":["chr"],"align":["left"]},{"label":["GP"],"name":[5],"type":["int"],"align":["right"]},{"label":["TOI"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["Goals"],"name":[7],"type":["int"],"align":["right"]},{"label":["Total.Assists"],"name":[8],"type":["int"],"align":["right"]},{"label":["First.Assists"],"name":[9],"type":["int"],"align":["right"]},{"label":["Second.Assists"],"name":[10],"type":["int"],"align":["right"]},{"label":["Total.Points"],"name":[11],"type":["int"],"align":["right"]},{"label":["IPP"],"name":[12],"type":["chr"],"align":["left"]},{"label":["Shots"],"name":[13],"type":["int"],"align":["right"]},{"label":["SH."],"name":[14],"type":["chr"],"align":["left"]},{"label":["ixG"],"name":[15],"type":["dbl"],"align":["right"]},{"label":["iCF"],"name":[16],"type":["int"],"align":["right"]},{"label":["iFF"],"name":[17],"type":["int"],"align":["right"]},{"label":["iSCF"],"name":[18],"type":["int"],"align":["right"]},{"label":["iHDCF"],"name":[19],"type":["int"],"align":["right"]},{"label":["Rush.Attempts"],"name":[20],"type":["int"],"align":["right"]},{"label":["Rebounds.Created"],"name":[21],"type":["int"],"align":["right"]},{"label":["PIM"],"name":[22],"type":["int"],"align":["right"]},{"label":["Total.Penalties"],"name":[23],"type":["int"],"align":["right"]},{"label":["Minor"],"name":[24],"type":["int"],"align":["right"]},{"label":["Major"],"name":[25],"type":["int"],"align":["right"]},{"label":["Misconduct"],"name":[26],"type":["int"],"align":["right"]},{"label":["Penalties.Drawn"],"name":[27],"type":["int"],"align":["right"]},{"label":["Giveaways"],"name":[28],"type":["int"],"align":["right"]},{"label":["Takeaways"],"name":[29],"type":["int"],"align":["right"]},{"label":["Hits"],"name":[30],"type":["int"],"align":["right"]},{"label":["Hits.Taken"],"name":[31],"type":["int"],"align":["right"]},{"label":["Shots.Blocked"],"name":[32],"type":["int"],"align":["right"]},{"label":["Faceoffs.Won"],"name":[33],"type":["int"],"align":["right"]},{"label":["Faceoffs.Lost"],"name":[34],"type":["int"],"align":["right"]},{"label":["Faceoffs.."],"name":[35],"type":["chr"],"align":["left"]},{"label":["Takeaway_Ratio"],"name":[36],"type":["dbl"],"align":["right"]},{"label":["Blocked_Shot_Rate"],"name":[37],"type":["dbl"],"align":["right"]},{"label":["Faceoff_Effectiveness"],"name":[38],"type":["dbl"],"align":["right"]},{"label":["Penalty_Discipline"],"name":[39],"type":["dbl"],"align":["right"]},{"label":["Selke_Score"],"name":[40],"type":["dbl"],"align":["right"]}],"data":[{"1":"41","2":"Kirill Marchenko","3":"CBJ","4":"R","5":"57","6":"1071.6167","7":"24","8":"36","9":"23","10":"13","11":"60","12":"64.52","13":"155","14":"15.48","15":"17.56","16":"323","17":"226","18":"147","19":"48","20":"9","21":"35","22":"14","23":"7","24":"7","25":"0","26":"0","27":"13","28":"65","29":"29","30":"43","31":"67","32":"29","33":"11","34":"24","35":"31.43","36":"0.3085106","37":"1.6237149","38":"0.3142857","39":"0.2161376","40":"49.79191","_rn_":"1"},{"1":"145","2":"Wyatt Johnston","3":"DAL","4":"C","5":"60","6":"1147.8833","7":"21","8":"34","9":"23","10":"11","11":"55","12":"67.90","13":"163","14":"12.88","15":"27.08","16":"311","17":"239","18":"225","19":"116","20":"4","21":"35","22":"12","23":"6","24":"6","25":"0","26":"0","27":"10","28":"36","29":"25","30":"32","31":"72","32":"30","33":"337","34":"343","35":"49.56","36":"0.4098361","37":"1.5681036","38":"0.4955882","39":"0.3727586","40":"51.83975","_rn_":"2"},{"1":"93","2":"Marco Rossi","3":"MIN","4":"C","5":"61","6":"1117.2333","7":"21","8":"30","9":"17","10":"13","11":"51","12":"69.86","13":"102","14":"20.59","15":"15.52","16":"198","17":"155","18":"136","19":"76","20":"3","21":"26","22":"24","23":"12","24":"12","25":"0","26":"0","27":"16","28":"42","29":"14","30":"42","31":"49","32":"28","33":"349","34":"388","35":"47.35","36":"0.2500000","37":"1.5037145","38":"0.4735414","39":"-0.2888982","40":"44.91144","_rn_":"3"},{"1":"115","2":"JJ Peterka","3":"BUF","4":"R","5":"57","6":"1029.9500","7":"17","8":"30","9":"14","10":"16","11":"47","12":"55.29","13":"129","14":"13.18","15":"14.74","16":"294","17":"207","18":"131","19":"43","20":"12","21":"20","22":"24","23":"8","24":"7","25":"0","26":"1","27":"11","28":"58","29":"14","30":"27","31":"57","32":"7","33":"2","34":"4","35":"33.33","36":"0.1944444","37":"0.4077868","38":"0.3333333","39":"-0.3981261","40":"24.94876","_rn_":"4"},{"1":"163","2":"Logan Cooley","3":"UTA","4":"C","5":"54","6":"957.0333","7":"17","8":"30","9":"15","10":"15","11":"47","12":"67.14","13":"115","14":"14.78","15":"12.16","16":"219","17":"164","18":"106","19":"40","20":"3","21":"14","22":"30","23":"15","24":"15","25":"0","26":"0","27":"13","28":"48","29":"20","30":"40","31":"94","32":"24","33":"241","34":"298","35":"44.71","36":"0.2941176","37":"1.5046498","38":"0.4471243","39":"-0.8808122","40":"37.55984","_rn_":"5"},{"1":"92","2":"Dylan Holloway","3":"STL","4":"L","5":"62","6":"1031.9833","7":"20","8":"26","9":"13","10":"13","11":"46","12":"71.88","13":"145","14":"13.79","15":"14.81","16":"276","17":"197","18":"139","19":"57","20":"10","21":"24","22":"10","23":"5","24":"5","25":"0","26":"0","27":"8","28":"59","29":"32","30":"133","31":"75","32":"39","33":"59","34":"80","35":"42.45","36":"0.3516484","37":"2.2674785","38":"0.4244604","39":"0.4185953","40":"88.83601","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># View the top Selke candidates</span></span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>top_selke_candidates <span class="ot">&lt;-</span> forwards <span class="sc">%&gt;%</span></span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Selke_Score)) <span class="sc">%&gt;%</span></span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Player, Team, Position, GP, Selke_Score) <span class="sc">%&gt;%</span></span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>)</span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>top_selke_candidates <span class="ot">&lt;-</span> top_selke_candidates <span class="sc">%&gt;%</span></span>
-<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">Expected_Selke =</span> <span class="fu">mean</span>(Selke_Score),  <span class="co"># You can define your own expected value</span></span>
-<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">Selke_Deviation =</span> Selke_Score <span class="sc">-</span> Expected_Selke</span>
-<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># View the top Selke candidates</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>top_selke_candidates <span class="ot">&lt;-</span> forwards <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Selke_Score)) <span class="sc">%&gt;%</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Player, Team, Position, GP, Selke_Score) <span class="sc">%&gt;%</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>)</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>top_selke_candidates <span class="ot">&lt;-</span> top_selke_candidates <span class="sc">%&gt;%</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">Expected_Selke =</span> <span class="fu">mean</span>(Selke_Score),  <span class="co"># You can define your own expected value</span></span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">Selke_Deviation =</span> Selke_Score <span class="sc">-</span> Expected_Selke</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a diverging bar chart</span></span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(top_selke_candidates, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(Player, Selke_Score), <span class="at">y =</span> Selke_Deviation, <span class="at">fill =</span> Selke_Deviation <span class="sc">&gt;</span> <span class="dv">0</span>)) <span class="sc">+</span></span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">'identity'</span>) <span class="sc">+</span></span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"firebrick"</span>, <span class="st">"steelblue"</span>), </span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Below Expected"</span>, <span class="st">"Above Expected"</span>),</span>
-<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>                    <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">'Top Selke Candidates - Deviation from Expected Selke Score'</span>,</span>
-<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">'Player'</span>, </span>
-<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">'Deviation from Expected Selke Score'</span></span>
-<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>),</span>
-<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.major.y =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"gray90"</span>),</span>
-<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span></span>
-<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a diverging bar chart</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(top_selke_candidates, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(Player, Selke_Score), <span class="at">y =</span> Selke_Deviation, <span class="at">fill =</span> Selke_Deviation <span class="sc">&gt;</span> <span class="dv">0</span>)) <span class="sc">+</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">'identity'</span>) <span class="sc">+</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"firebrick"</span>, <span class="st">"steelblue"</span>), </span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Below Expected"</span>, <span class="st">"Above Expected"</span>),</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>                    <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">'Top Selke Candidates - Deviation from Expected Selke Score'</span>,</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">'Player'</span>, </span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">'Deviation from Expected Selke Score'</span></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>),</span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.major.y =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"gray90"</span>),</span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span></span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -661,10 +619,10 @@ Attaching package: 'lubridate'</code></pre>
 <section id="lady-byng-memorial-trophy-consideration-identifying-the-most-sportsmanlike-player" class="level2">
 <h2 class="anchored" data-anchor-id="lady-byng-memorial-trophy-consideration-identifying-the-most-sportsmanlike-player">Lady Byng Memorial Trophy Consideration: Identifying the Most Sportsmanlike Player</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>Sportsman <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"SkaterIndividualstats.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>Sportsman <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"SkaterIndividualstats.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Sportsman)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Sportsman)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] "X"                "Player"           "Team"             "Position"        
  [5] "GP"               "TOI"              "Goals"            "Total.Assists"   
@@ -678,38 +636,38 @@ Attaching package: 'lubridate'</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Compute key metrics</span></span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>Sportsman <span class="ot">&lt;-</span> Sportsman <span class="sc">%&gt;%</span></span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">PIM_Ratio =</span> PIM <span class="sc">/</span> GP,  <span class="co"># Penalty minutes per game</span></span>
-<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">PIM_Ratio =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(PIM_Ratio), <span class="dv">0</span>, PIM_Ratio),  <span class="co"># Replace NA with 0</span></span>
-<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">PIM_Ratio =</span> <span class="fu">ifelse</span>(PIM_Ratio <span class="sc">&gt;</span> <span class="dv">10</span>, <span class="dv">10</span>, PIM_Ratio),  <span class="co"># Cap at 10</span></span>
-<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">PIM_Ratio =</span> PIM_Ratio <span class="sc">/</span> <span class="dv">10</span>,  <span class="co"># Scale to 0-1</span></span>
-<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">PIM_Ratio =</span> <span class="dv">1</span> <span class="sc">-</span> PIM_Ratio,  <span class="co"># Reverse scale</span></span>
-<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">PIM_Ratio =</span> PIM_Ratio <span class="sc">*</span> <span class="dv">100</span>  <span class="co"># Scale to 0-100</span></span>
-<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>Sportsman <span class="ot">&lt;-</span> Sportsman <span class="sc">%&gt;%</span></span>
-<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(GP <span class="sc">&gt;=</span> <span class="dv">50</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">Sportsman_Score =</span> (</span>
-<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>      (PIM_Ratio <span class="sc">*</span> <span class="dv">2</span>) <span class="sc">+</span>  <span class="co"># Low penalty minutes</span></span>
-<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a>      (Hits <span class="sc">*</span> <span class="fl">0.5</span>) <span class="sc">+</span>     <span class="co"># Physical play</span></span>
-<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>      (Giveaways <span class="sc">*</span> <span class="fl">0.5</span>)  <span class="co"># Few giveaways</span></span>
-<span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-22"><a href="#cb47-22" aria-hidden="true" tabindex="-1"></a>top_sportsman <span class="ot">&lt;-</span> Sportsman <span class="sc">%&gt;%</span></span>
-<span id="cb47-23"><a href="#cb47-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Sportsman_Score)) <span class="sc">%&gt;%</span></span>
-<span id="cb47-24"><a href="#cb47-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Compute key metrics</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>Sportsman <span class="ot">&lt;-</span> Sportsman <span class="sc">%&gt;%</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">PIM_Ratio =</span> PIM <span class="sc">/</span> GP,  <span class="co"># Penalty minutes per game</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">PIM_Ratio =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(PIM_Ratio), <span class="dv">0</span>, PIM_Ratio),  <span class="co"># Replace NA with 0</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">PIM_Ratio =</span> <span class="fu">ifelse</span>(PIM_Ratio <span class="sc">&gt;</span> <span class="dv">10</span>, <span class="dv">10</span>, PIM_Ratio),  <span class="co"># Cap at 10</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">PIM_Ratio =</span> PIM_Ratio <span class="sc">/</span> <span class="dv">10</span>,  <span class="co"># Scale to 0-1</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">PIM_Ratio =</span> <span class="dv">1</span> <span class="sc">-</span> PIM_Ratio,  <span class="co"># Reverse scale</span></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">PIM_Ratio =</span> PIM_Ratio <span class="sc">*</span> <span class="dv">100</span>  <span class="co"># Scale to 0-100</span></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>Sportsman <span class="ot">&lt;-</span> Sportsman <span class="sc">%&gt;%</span></span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(GP <span class="sc">&gt;=</span> <span class="dv">50</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">Sportsman_Score =</span> (</span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>      (PIM_Ratio <span class="sc">*</span> <span class="dv">2</span>) <span class="sc">+</span>  <span class="co"># Low penalty minutes</span></span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>      (Hits <span class="sc">*</span> <span class="fl">0.5</span>) <span class="sc">+</span>     <span class="co"># Physical play</span></span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a>      (Giveaways <span class="sc">*</span> <span class="fl">0.5</span>)  <span class="co"># Few giveaways</span></span>
+<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb43-21"><a href="#cb43-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-22"><a href="#cb43-22" aria-hidden="true" tabindex="-1"></a>top_sportsman <span class="ot">&lt;-</span> Sportsman <span class="sc">%&gt;%</span></span>
+<span id="cb43-23"><a href="#cb43-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Sportsman_Score)) <span class="sc">%&gt;%</span></span>
+<span id="cb43-24"><a href="#cb43-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Create a unique visualization</span></span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(top_sportsman, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(Player, <span class="sc">-</span>Sportsman_Score), <span class="at">y =</span> Sportsman_Score, <span class="at">fill =</span> Sportsman_Score)) <span class="sc">+</span></span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">'identity'</span>) <span class="sc">+</span></span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">'Top 5 Sportsman Candidates - Sportsman Score'</span>, <span class="at">x =</span> <span class="st">'Player'</span>, <span class="at">y =</span> <span class="st">'Sportsman Score'</span>) <span class="sc">+</span></span>
-<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Create a unique visualization</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(top_sportsman, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(Player, <span class="sc">-</span>Sportsman_Score), <span class="at">y =</span> Sportsman_Score, <span class="at">fill =</span> Sportsman_Score)) <span class="sc">+</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">'identity'</span>) <span class="sc">+</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">'Top 5 Sportsman Candidates - Sportsman Score'</span>, <span class="at">x =</span> <span class="st">'Player'</span>, <span class="at">y =</span> <span class="st">'Sportsman Score'</span>) <span class="sc">+</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">

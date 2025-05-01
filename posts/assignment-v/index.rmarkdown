@@ -20,9 +20,13 @@ require(readr)
 library(DT)
 ```
 
+
+
 ## Hart Memorial Trophy Consideration: Identifying the Top-Performing NHL Players to their Respective Teams
 
 To identify the top-performing NHL players for the Hart Memorial Trophy consideration, we need to analyze player performance based on key metrics such as goals, assists, points, and plus-minus rating. The following R code snippet demonstrates how to load and analyze NHL player data to identify the top-performing players based on these metrics.
+
+
 
 ```{r}
 #|message: false
@@ -36,9 +40,13 @@ nhl_lines <- read.csv("lines.csv")
 colnames(nhl_lines)
 ```
 
+
+
 To do this, we created key metrics such as net value, net value per 60 minutes, team share, and "most valuable player" (MVP) score to evaluate player performance. We then filtered the dataset to include only players with a sufficient number of games played and calculated the MVP score for each player based on these metrics.
 
 MVP Score measures the player's overall contribution to the team's success, considering their performance in key areas such as goals, assists, and time on ice. The formula for MVP Score is a combination of net value per 60 minutes, time on ice, and team contribution percentage. The higher the MVP Score, the more valuable the player is to their team.
+
+
 
 ```{r, include=FALSE}
 #|message: false
@@ -89,6 +97,8 @@ ggplot(head(hart_ballot, 10), aes(x=reorder(name, mvp_score), y=mvp_score, fill=
   theme_minimal()
 ```
 
+
+
 The results shows that the pair Ekholm-Bouchard are the top-performing players based on the MVP score (0.705), followed by the triple Hyman-McDavid-Draisaitl for team Edmonton Oilers. The pairs Slavis-Burns, Gostisbehere-Walker, and Orlov-Chatfield also played an indispensable role in team CAR.
 
 Meanwhile the Hartman Memorial trophy goes to the pair Ekholm-Bouchard for their outstanding performance in the recent season.
@@ -96,6 +106,8 @@ Meanwhile the Hartman Memorial trophy goes to the pair Ekholm-Bouchard for their
 ## Vezina Trophy Consideration: Identifying the Top-Performing NHL Goalies
 
 To find the best goalies in the NHL, we need to analyze their performance based on key metrics such as save percentage and goals against average (GAA). The following R code snippet demonstrates how to load and analyze NHL goalie data to identify the top-performing goalies based on these metrics for the Vezina Trophy consideration.
+
+
 
 ```{r}
 #|message: false
@@ -117,7 +129,11 @@ head(shots_data)
 
 ```
 
+
+
 We summarize the goalie performance based on the number of shots faced, goals allowed, saves made, save percentage, and games played. We then calculate the goals against average (GAA) for each goalie to further evaluate their performance.
+
+
 
 ```{r}
 goalie_stats <- shots_data %>%
@@ -136,7 +152,11 @@ goalie_stats <- shots_data %>%
 head(goalie_stats)
 ```
 
+
+
 Next, we calculate the goals against average (GAA) for each goalie by dividing the total goals allowed by the total games played. We then merge the two datasets to compare the goalies based on save percentage and GAA.
+
+
 
 ```{r}
 goalie_gaa <- shots_data %>%
@@ -167,7 +187,11 @@ head(goalie_performance)
 
 ```
 
+
+
 To filter out goalies who have faced a minimum number of shots and played a minimum number of games, we set thresholds for shots faced and games played. We then filter the dataset to include only goalies who meet these criteria. By the way, forgo the duplicate columns.
+
+
 
 ```{r}
 # Set a threshold for minimum shots faced
@@ -184,7 +208,11 @@ head(goalie_performance_filtered)
 
 ```
 
+
+
 Finally, we create a scatter plot to visualize the relationship between save percentage and goals against average for the top-performing goalies. We use point size to represent the number of shots faced by each goalie. The plot provides a clear comparison of goalie performance based on these key metrics.
+
+
 
 ```{r}
 ggplot(goalie_performance_filtered, aes(x = Save_Percentage, y = GAA, label = goalieNameForShot, size = Shots_On_Goal)) +
@@ -201,11 +229,15 @@ ggplot(goalie_performance_filtered, aes(x = Save_Percentage, y = GAA, label = go
   theme_minimal()
 ```
 
+
+
 We adjudge Connor Hellebuyck, Andrei Vasilevskiy, and Ilya Sorokin as the top-3-performing goalies based on save percentage, goals against average and games played, with Connor being the best goaltender for the Vezina Trophy.
 
 ## James Norris Memorial Trophy Consideration: Identifying the "Best All-Around" Defenseman
 
 Here, we used the NHL Draft Stats dataset to identify the top defensemen based on key metrics such as points per game, assists per game, goals per game, offensive score, and defensive score. We then filtered the dataset to include only defensemen who played more than 50 games and ranked them based on their offensive and defensive scores.
+
+
 
 ```{r}
 # Load the dataset
@@ -217,7 +249,11 @@ NHLDraftStats <- read.csv("SkaterIndividualstats.csv")
 colnames(NHLDraftStats)
 ```
 
+
+
 Offensive score is calculated as the sum of points per game, assists per game, and goals per game, while defensive score is calculated as the sum of shots blocked, hits, takeaways, and penalized by giveaways per game. We then rank the defensemen based on their offensive and defensive scores to identify the top performers.
+
+
 
 ```{r}
 # Filter out defensemen
@@ -242,7 +278,11 @@ top_defensemen <- defensemen %>%
 
 ```
 
+
+
 Here is a visualization of the top 5 defensemen based on their total points, combining offensive and defensive scores. The bar chart provides a clear comparison of the top defensemen based on their overall performance.
+
+
 
 ```{r}
 # Bar chart of total points
@@ -254,9 +294,13 @@ ggplot(top_defensemen, aes(x = reorder(Player, -(Defensive.Score * Offensive.Sco
 
 ```
 
+
+
 We ranked Moritz Seider, MacKenzie Weegar, Cale Makar, Colton Parayko and Neal Pionk as the top 5 defensemen based on their overall performance. Moritz Seider is the best defenseman for the James Norris Memorial Trophy.
 
 ## Calder Memorial Trophy Consideration: Identifying the Top Rookie Performer
+
+
 
 ```{r}
 # Load the dataset
@@ -306,7 +350,11 @@ ggplot(top_rookies, aes(x = reorder(Player, -PPGRS))) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+
+
 ## Frank J. Selke Trophy Consideration: Identifying the Best Defensive Forward
+
+
 
 ```{r}
 # Using the previous dataset
@@ -372,7 +420,11 @@ ggplot(top_selke_candidates, aes(x = reorder(Player, Selke_Score), y = Selke_Dev
   )
 ```
 
+
+
 ## Lady Byng Memorial Trophy Consideration: Identifying the Most Sportsmanlike Player
+
+
 
 ```{r}
 Sportsman <- read.csv("SkaterIndividualstats.csv")
@@ -417,3 +469,4 @@ ggplot(top_sportsman, aes(x = reorder(Player, -Sportsman_Score), y = Sportsman_S
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+
